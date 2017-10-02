@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   viewBox="0 0 16 16"
+   version="1.1"
+   id="svg12"
+   sodipodi:docname="reverse.svg"
+   inkscape:version="0.92.2 5c3e80d, 2017-08-06">
+  <metadata
+     id="metadata18">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs16" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="643"
+     inkscape:window-height="480"
+     id="namedview14"
+     showgrid="false"
+     inkscape:zoom="14.75"
+     inkscape:cx="8"
+     inkscape:cy="8"
+     inkscape:window-x="0"
+     inkscape:window-y="31"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg12" />
+  <g
+     transform="translate(-81.00015 -687)"
+     style="fill:#404040;color:#000"
+     id="g10">
+    <path
+       d="m 90 694 0 -1 c 0 -0.265 -0.093 -0.531 -0.281 -0.719 l -3 -3 -0.281 -0.281 l -0.875 0 -0.281 0.281 -3 3 c -0.188 0.188 -0.281 0.453 -0.281 0.719 l 0 1 1 0 c 0.265 0 0.531 -0.093 0.719 -0.281 l 2.281 -2.281 2.281 2.281 c 0.188 0.188 0.453 0.281 0.719 0.281 l 1 0 z"
+       id="path2"
+       style="fill:#404040" />
+    <path
+       d="m 85 691 0 7 2 0 0 -7 -2 0 z"
+       id="path4"
+       style="fill:#404040" />
+    <path
+       d="m 96 695 0 1 c 0 0.265 -0.093 0.531 -0.281 0.719 l -3 3 -0.281 0.281 l -0.875 0 -0.281 -0.281 -3 -3 c -0.188 -0.188 -0.281 -0.453 -0.281 -0.719 l 0 -1 1 0 c 0.265 0 0.531 0.093 0.719 0.281 l 2.281 2.281 2.281 -2.281 c 0.188 -0.188 0.453 -0.281 0.719 -0.281 l 1 0 z"
+       id="path6"
+       style="fill:#404040" />
+    <path
+       d="m 91 691 0 7 2 0 0 -7 -2 0 z"
+       id="path8"
+       style="fill:#404040" />
+  </g>
+</svg>
