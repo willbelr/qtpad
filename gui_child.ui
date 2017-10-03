@@ -17,12 +17,7 @@
    <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget
-{
-	background-color: white;
-}
-
-QWidget.QPlainTextEdit, QWidget.QTextEdit
+   <string notr="true">QWidget.QPlainTextEdit, QWidget.QTextEdit
 {
 	border: none;
 }

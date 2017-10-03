@@ -9,12 +9,12 @@ from PyQt5.QtWidgets import QSystemTrayIcon
 import gui_child, gui_style
 
 LOCAL = os.path.dirname(os.path.realpath(__file__)) + '/'
-ICON_DIR = os.path.dirname(os.path.realpath(__file__)) + '/icons/'
+ICON_DIR = LOCAL + '/icons/'
 DB_DIR = LOCAL + "/db/"
 PREFERENCES_DB = DB_DIR + "preferences.json"
 PROFILES_DB = DB_DIR + "profiles.json"
-if not os.path.exists(LOCAL + "/db"):
-    os.makedirs(LOCAL + "/db")
+if not os.path.exists(DB_DIR):
+    os.makedirs(DB_DIR)
 
 class preferences(object):
     def __init__(self):
@@ -85,7 +85,9 @@ class profile(object):
             self.db[self.name] = \
             {
                 'pin': False,
-                'x': '', 'y': '', 'width': '', 'height': '',
+                'x': '', 'y': '',
+                'width': preferences.q["width"],
+                'height': preferences.q["height"],
                 'background': preferences.q["background"],
                 'font_color': preferences.q["font_color"],
                 'font_size': preferences.q["font_size"],
@@ -117,13 +119,22 @@ class profile(object):
 class styleDialog(QtWidgets.QDialog):
     def __init__(self, parent):
         super().__init__()
-        self.setWindowFlags(Qt.SubWindow)
-        self.width = preferences.q["width"]
-        self.height = preferences.q["height"]
-        self.background = preferences.q["background"]
-        self.fontcolor = preferences.q["font_color"]
-        self.fontsize = preferences.q["font_size"]
-        self.fontfamily = preferences.q["font_family"]
+        self.parent = parent
+        self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        if type(parent) is child:
+            self.width = parent.profile.q["width"]
+            self.height = parent.profile.q["height"]
+            self.background = parent.profile.q["background"]
+            self.fontcolor = parent.profile.q["font_color"]
+            self.fontsize = parent.profile.q["font_size"]
+            self.fontfamily = parent.profile.q["font_family"]
+        else:
+            self.width = preferences.q["width"]
+            self.height = preferences.q["height"]
+            self.background = preferences.q["background"]
+            self.fontcolor = preferences.q["font_color"]
+            self.fontsize = preferences.q["font_size"]
+            self.fontfamily = preferences.q["font_family"]
         font = QtGui.QFont()
         font.setFamily(self.fontfamily)
 
@@ -145,33 +156,55 @@ class styleDialog(QtWidgets.QDialog):
         self.exec()
 
     def pickBackgroundColor(self):
-        #cw = QtWidgets.QColorDialog()
-        #cw.setOption(QtWidgets.QColorDialog.NoButtons)
-        #color = cw.exec()
-        color = QtWidgets.QColorDialog.getColor()
+        cw = QtWidgets.QColorDialog(QtGui.QColor(self.background))
+        cw.setWindowFlags(cw.windowFlags() | Qt.WindowStaysOnTopHint)
+        cw.exec()
+        color = cw.selectedColor()
         if color:
             self.background = color.name()
             self.ui.backgroundLabel.setText(color.name())
+            if type(self.parent) is child:
+                palette = self.parent.ui.textEdit.viewport().palette()
+                palette.setColor(QtGui.QPalette.Base, color)
+                self.parent.ui.textEdit.viewport().setPalette(palette)
 
     def pickFontColor(self):
-        color = QtWidgets.QColorDialog.getColor()
+        cw = QtWidgets.QColorDialog(QtGui.QColor(self.fontcolor))
+        cw.setWindowFlags(cw.windowFlags() | Qt.WindowStaysOnTopHint)
+        cw.exec()
+        color = cw.selectedColor()
         if color.isValid():
             self.fontcolor = color.name()
             self.ui.fontcolorLabel.setText(color.name())
+            if type(self.parent) is child:
+                palette = self.parent.ui.textEdit.viewport().palette()
+                palette.setColor(QtGui.QPalette.Text, color)
+                self.parent.ui.textEdit.viewport().setPalette(palette)
 
     def updateWidth(self):
         self.width = self.ui.widthOpt.value()
+        if type(self.parent) is child:
+            self.parent.resize(self.width, self.parent.height())
 
     def updateHeight(self):
         self.height = self.ui.heightOpt.value()
+        if type(self.parent) is child:
+            self.parent.resize(self.parent.width(), self.height)
 
     def updateFontsize(self):
         self.fontsize = self.ui.fontsizeOpt.value()
+        if type(self.parent) is child:
+            font = self.parent.ui.textEdit.font()
+            font.setPointSize(self.fontsize)
+            self.parent.ui.textEdit.setFont(font)
 
     def updateFontfamily(self):
         self.fontfamily = self.ui.fontfamilyOpt.currentText()
+        if type(self.parent) is child:
+            font = self.parent.ui.textEdit.font()
+            font.setFamily(self.fontfamily)
+            self.parent.ui.textEdit.setFont(font)
 
-#class mother(QtCore.QCoreApplication): ?
 class mother(object):
     def __init__(self, parent=None):
         self.last = ""
@@ -448,7 +481,7 @@ class child(QtWidgets.QWidget):
         self.loadStyle()
         self.setWindowTitle(self.name)
         self.setAttribute(Qt.WA_X11NetWmWindowTypeToolBar)
-        self.setWindowFlags(Qt.SubWindow | Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
+        self.setWindowFlags(Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
 
         self.ui.imageLabel.hide()
         self.ui.inputText.hide()
@@ -472,6 +505,7 @@ class child(QtWidgets.QWidget):
         self.ui.textEdit.keyPressEvent = self.keyPressEvent
         self.ui.textEdit.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.textEdit.customContextMenuRequested.connect(lambda: menu.popup(QtGui.QCursor.pos()))
+        self.ui.textEdit.setAttribute(Qt.WA_TranslucentBackground)
 
         if not preferences.q["save_position"] or not self.profile.q["x"] or not self.profile.q["width"]:
             x = QtWidgets.QDesktopWidget().screenGeometry().width() - 350
@@ -499,6 +533,9 @@ class child(QtWidgets.QWidget):
             self.profile.save("font_color", style.fontcolor)
             self.profile.save("font_size", style.fontsize)
             self.profile.save("font_family", style.fontfamily)
+        else:
+            self.ui.textEdit.viewport().update()
+            self.resize(self.profile.q["width"], self.profile.q["height"])
 
     def focus(self):
         self.show()
@@ -530,17 +567,17 @@ class child(QtWidgets.QWidget):
 
     def loadStyle(self):
         self.profile.load()
-        stylesheet = self.ui.textEdit.styleSheet()
-        stylesheet += "QWidget.QPlainTextEdit" + \
-        "{" + \
-            "background-color:" + self.profile.q["background"] + ";" + \
-            "color:" + self.profile.q["font_color"] + ";" + \
-            "font-family:" + self.profile.q["font_family"] + ";" \
-        "}"
-        self.ui.textEdit.setStyleSheet(stylesheet)
+        palette = self.ui.textEdit.viewport().palette()
+        palette.setColor(QtGui.QPalette.Base, QtGui.QColor(self.profile.q["background"]))
+        palette.setColor(QtGui.QPalette.Text, QtGui.QColor(self.profile.q["font_color"]))
+        self.ui.textEdit.viewport().setPalette(palette)
+
         font = self.ui.textEdit.font()
+        font.setFamily(self.profile.q["font_family"])
         font.setPointSize(self.profile.q["font_size"])
         self.ui.textEdit.setFont(font)
+
+        self.ui.textEdit.viewport().update()
 
     def pin(self):
         if self.profile.q["pin"]:
@@ -700,7 +737,7 @@ class child(QtWidgets.QWidget):
 
     def focusOutEvent(self, event):
         if self.name:
-            QtWidgets.QPlainTextEdit.focusInEvent(self.ui.textEdit, event)
+            QtWidgets.QPlainTextEdit.focusOutEvent(self.ui.textEdit, event)
             self.save()
 
     def focusInEvent(self, event):
@@ -710,7 +747,8 @@ class child(QtWidgets.QWidget):
 if __name__== '__main__':
     preferences = preferences()
     app = QtWidgets.QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
     clipboard = app.clipboard()
-    main = mother()
+    daemon = mother()
     sys.exit(app.exec())
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/home/will/scripts/qtpad/gui.ui'
+# Form implementation generated from reading ui file '/home/will/scripts/qtpad/gui_child.ui'
 #
 # Created by: PyQt5 UI code generator 5.9
 #
@@ -13,12 +13,7 @@ class Ui_Form(object):
         Form.setObjectName("Form")
         Form.resize(253, 219)
         Form.setAutoFillBackground(False)
-        Form.setStyleSheet("QWidget\n"
-"{\n"
-"    background-color: white;\n"
-"}\n"
-"\n"
-"QWidget.QPlainTextEdit, QWidget.QTextEdit\n"
+        Form.setStyleSheet("QWidget.QPlainTextEdit, QWidget.QTextEdit\n"
 "{\n"
 "    border: none;\n"
 "}\n"
