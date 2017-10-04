@@ -3,23 +3,22 @@ import os
 import sys
 import time
 import json
-from PyQt5 import QtGui, QtWidgets, QtCore
+from PyQt5 import QtGui, QtWidgets, QtCore, uic
 from PyQt5.QtCore import Qt, QThread, QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QSystemTrayIcon
-import gui_child, gui_style
 
 LOCAL = os.path.dirname(os.path.realpath(__file__)) + '/'
-ICON_DIR = LOCAL + '/icons/'
-DB_DIR = LOCAL + "/db/"
-PREFERENCES_DB = DB_DIR + "preferences.json"
-PROFILES_DB = DB_DIR + "profiles.json"
-if not os.path.exists(DB_DIR):
-    os.makedirs(DB_DIR)
+ICONS = LOCAL + '/icons/'
+DB = LOCAL + "/db/"
+PREFERENCES = DB + "preferences.json"
+PROFILES = DB + "profiles.json"
+if not os.path.exists(DB):
+    os.makedirs(DB)
 
 class preferences(object):
     def __init__(self):
-        if os.path.isfile(PREFERENCES_DB) and os.stat(PREFERENCES_DB).st_size > 0:
-            with open(PREFERENCES_DB) as f:
+        if os.path.isfile(PREFERENCES) and os.stat(PREFERENCES).st_size > 0:
+            with open(PREFERENCES) as f:
                 self.db = json.load(f)
         else:
             self.db = \
@@ -37,15 +36,15 @@ class preferences(object):
                 'style':
                 {
                     'width': 300,
-                    'height': 250,
-                    'background': 'white',
-                    'font_color': 'black',
+                    'height': 220,
+                    'background': '#ffff7f',
+                    'font_color': '#000000',
                     'font_size': 9,
-                    'font_family': '',
+                    'font_family': 'Sans Serif',
                 },
                 'actives': '',
             }
-            with open(PREFERENCES_DB, "w+") as f:
+            with open(PREFERENCES, "w+") as f:
                 f.write(json.dumps(self.db, indent=2, sort_keys=False))
         self.load()
 
@@ -58,7 +57,7 @@ class preferences(object):
         self.q["actives"] = self.db["actives"]
 
     def save(self, name, entry, value=None):
-        with open(PREFERENCES_DB) as f:
+        with open(PREFERENCES) as f:
             self.db = json.load(f)
 
         if value is None:
@@ -66,7 +65,7 @@ class preferences(object):
         else:
             self.db[name][entry] = value
 
-        with open(PREFERENCES_DB, "w+") as f:
+        with open(PREFERENCES, "w+") as f:
             f.write(json.dumps(self.db, indent=2, sort_keys=False))
         self.load()
 
@@ -75,8 +74,8 @@ class profile(object):
         self.path = entry
         self.name = entry.rsplit('/', 1)[-1].rsplit('.', 1)[0]
 
-        if os.path.isfile(PROFILES_DB) and os.stat(PROFILES_DB).st_size > 0:
-            with open(PROFILES_DB) as f:
+        if os.path.isfile(PROFILES) and os.stat(PROFILES).st_size > 0:
+            with open(PROFILES) as f:
                 self.db = json.load(f)
         else:
             self.db = {}
@@ -94,12 +93,12 @@ class profile(object):
                 'font_family': preferences.q["font_family"],
             }
 
-            with open(PROFILES_DB, 'w') as f:
+            with open(PROFILES, 'w') as f:
                 f.write(json.dumps(self.db, indent=2, sort_keys=False))
         self.load()
 
     def load(self):
-        with open(PROFILES_DB) as f:
+        with open(PROFILES) as f:
             self.db = json.load(f)
         if self.name in self.db:
             self.q = {}
@@ -107,7 +106,7 @@ class profile(object):
                 self.q[entry] = self.db[self.name][entry]
 
     def save(self, entry, value):
-        with open(PROFILES_DB, "r+") as f:
+        with open(PROFILES, "r+") as f:
             profiles = json.load(f)
             if self.name in profiles:
                 profiles[self.name][entry] = value
@@ -119,9 +118,13 @@ class profile(object):
 class styleDialog(QtWidgets.QDialog):
     def __init__(self, parent):
         super().__init__()
-        self.parent = parent
+        self.ui = uic.loadUi(LOCAL + 'gui_style.ui', self)
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
-        if type(parent) is child:
+        self.type = type(parent)
+        self.parent = parent
+
+        if self.type is child:
+            self.setWindowTitle("Style for '" + self.parent.name + "'")
             self.width = parent.profile.q["width"]
             self.height = parent.profile.q["height"]
             self.background = parent.profile.q["background"]
@@ -129,20 +132,21 @@ class styleDialog(QtWidgets.QDialog):
             self.fontsize = parent.profile.q["font_size"]
             self.fontfamily = parent.profile.q["font_family"]
         else:
+            self.setWindowTitle("Default style")
             self.width = preferences.q["width"]
             self.height = preferences.q["height"]
             self.background = preferences.q["background"]
             self.fontcolor = preferences.q["font_color"]
             self.fontsize = preferences.q["font_size"]
             self.fontfamily = preferences.q["font_family"]
+            self.ui.defaultOpt.hide()
+
         font = QtGui.QFont()
         font.setFamily(self.fontfamily)
-
-        self.ui = gui_style.Ui_Dialog()
-        self.ui.setupUi(self)
         self.ui.fontfamilyOpt.setCurrentFont(font)
-        self.ui.backgroundLabel.setText(self.background)
-        self.ui.fontcolorLabel.setText(self.fontcolor)
+
+        self.ui.backgroundLabel.setText(self.background.upper())
+        self.ui.fontcolorLabel.setText(self.fontcolor.upper())
         self.ui.widthOpt.setValue(self.width)
         self.ui.heightOpt.setValue(self.height)
         self.ui.fontsizeOpt.setValue(self.fontsize)
@@ -153,7 +157,48 @@ class styleDialog(QtWidgets.QDialog):
         self.ui.widthOpt.valueChanged.connect(self.updateWidth)
         self.ui.heightOpt.valueChanged.connect(self.updateHeight)
         self.ui.fontsizeOpt.valueChanged.connect(self.updateFontsize)
-        self.exec()
+
+        self.style = self.exec()
+        self.close()
+
+    def closeEvent(self, event):
+        if self.style:
+            if self.type is mother or self.ui.defaultOpt.isChecked():
+                preferences.save("style", "width", self.width)
+                preferences.save("style", "height", self.height)
+                preferences.save("style", "background", self.background)
+                preferences.save("style", "font_color", self.fontcolor)
+                preferences.save("style", "font_size", self.fontsize)
+                preferences.save("style", "font_family", self.fontfamily)
+
+            if self.type is child:
+                self.parent.profile.save("width", self.width)
+                self.parent.profile.save("height", self.height)
+                self.parent.profile.save("background", self.background)
+                self.parent.profile.save("font_color", self.fontcolor)
+                self.parent.profile.save("font_size", self.fontsize)
+                self.parent.profile.save("font_family", self.fontfamily)
+
+        elif self.type is child:
+            self.parent.ui.textEdit.viewport().update()
+            self.parent.resize(self.parent.profile.q["width"], self.parent.profile.q["height"])
+
+        if self.ui.allOpt.isChecked():
+            if self.type is mother:
+                children = self.parent.children
+            elif self.type is child:
+                children = self.parent.parent.children
+
+            for f in list(children):
+                children[f].profile.save("background", self.background)
+                children[f].profile.save("width", self.width)
+                children[f].profile.save("height", self.height)
+                children[f].profile.save("background", self.background)
+                children[f].profile.save("font_color", self.fontcolor)
+                children[f].profile.save("font_size", self.fontsize)
+                children[f].profile.save("font_family", self.fontfamily)
+                children[f].loadStyle()
+        event.accept()
 
     def pickBackgroundColor(self):
         cw = QtWidgets.QColorDialog(QtGui.QColor(self.background))
@@ -162,8 +207,8 @@ class styleDialog(QtWidgets.QDialog):
         color = cw.selectedColor()
         if color:
             self.background = color.name()
-            self.ui.backgroundLabel.setText(color.name())
-            if type(self.parent) is child:
+            self.ui.backgroundLabel.setText(color.name().upper())
+            if self.type is child:
                 palette = self.parent.ui.textEdit.viewport().palette()
                 palette.setColor(QtGui.QPalette.Base, color)
                 self.parent.ui.textEdit.viewport().setPalette(palette)
@@ -175,44 +220,43 @@ class styleDialog(QtWidgets.QDialog):
         color = cw.selectedColor()
         if color.isValid():
             self.fontcolor = color.name()
-            self.ui.fontcolorLabel.setText(color.name())
-            if type(self.parent) is child:
+            self.ui.fontcolorLabel.setText(color.name().upper())
+            if self.type is child:
                 palette = self.parent.ui.textEdit.viewport().palette()
                 palette.setColor(QtGui.QPalette.Text, color)
                 self.parent.ui.textEdit.viewport().setPalette(palette)
 
     def updateWidth(self):
         self.width = self.ui.widthOpt.value()
-        if type(self.parent) is child:
+        if self.type is child:
             self.parent.resize(self.width, self.parent.height())
 
     def updateHeight(self):
         self.height = self.ui.heightOpt.value()
-        if type(self.parent) is child:
+        if self.type is child:
             self.parent.resize(self.parent.width(), self.height)
 
     def updateFontsize(self):
         self.fontsize = self.ui.fontsizeOpt.value()
-        if type(self.parent) is child:
+        if self.type is child:
             font = self.parent.ui.textEdit.font()
             font.setPointSize(self.fontsize)
             self.parent.ui.textEdit.setFont(font)
 
     def updateFontfamily(self):
         self.fontfamily = self.ui.fontfamilyOpt.currentText()
-        if type(self.parent) is child:
+        if self.type is child:
             font = self.parent.ui.textEdit.font()
             font.setFamily(self.fontfamily)
             self.parent.ui.textEdit.setFont(font)
 
 class mother(object):
     def __init__(self, parent=None):
-        self.last = ""
         icons = ["tray", "quit", "file_active", "file_inactive", "enabled", "new", "hide", "show",
                     "reverse" ,"preferences", "image", "toggle", "reset", "file_pinned", "style"]
         self.icon = {}
         for icon in icons:
-            self.icon[icon] = QtGui.QIcon(ICON_DIR + icon + ".svg")
+            self.icon[icon] = QtGui.QIcon(ICONS + icon + ".svg")
 
         self.menu = QtWidgets.QMenu()
         self.menu.aboutToShow.connect(self.refreshMenu)
@@ -233,13 +277,13 @@ class mother(object):
         self.trayIcon.show()
 
         self.children = {}
-        for f in os.listdir(DB_DIR):
+        for f in os.listdir(DB):
             if f.endswith(".txt"):
                 name = f.rsplit('.', 1)[0]
-                if os.stat(DB_DIR + f).st_size > 0:
-                    self.children[name] = child(self, DB_DIR + f)
+                if os.stat(DB + f).st_size > 0:
+                    self.children[name] = child(self, DB + f)
                 else:
-                    os.remove(DB_DIR + f)
+                    os.remove(DB + f)
         self.cleanProfiles()
 
         if preferences.q["startup_action"]:
@@ -247,10 +291,10 @@ class mother(object):
 
     #Actions
     def cleanProfiles(self):
-        with open(PROFILES_DB, "r+") as db:
+        with open(PROFILES, "r+") as db:
             profiles = json.load(db)
             for entry in list(profiles):
-                path = DB_DIR + entry + ".txt"
+                path = DB + entry + ".txt"
                 if not os.path.isfile(path) or os.stat(path).st_size < 0:
                     del profiles[entry]
             db.seek(0)
@@ -292,7 +336,7 @@ class mother(object):
 
         self.menu.addMenu(self.submenu["preferences"])
         self.submenu["preferences"].clear()
-        self.submenu["preferences"].addAction(self.icon["style"], "Default style", self.setDefaultStyle)
+        self.submenu["preferences"].addAction(self.icon["style"], "Default style", lambda: styleDialog(self))
         if preferences.q["top_level"]:
             self.submenu["preferences"].addAction(self.icon["enabled"], 'Always on top', lambda: self.action("top"))
         else:
@@ -324,32 +368,24 @@ class mother(object):
             self.submenu[sm].addAction("None", lambda sm=sm: preferences.save("general", sm, ""))
         self.menu.addAction(self.icon["quit"], 'Quit', app.exit)
 
-    def setDefaultStyle(self):
-        style = styleDialog(self)
-        if style.result():
-            preferences.save("style", "width", style.width)
-            preferences.save("style", "height", style.height)
-            preferences.save("style", "background", style.background)
-            preferences.save("style", "font_color", style.fontcolor)
-            preferences.save("style", "font_size", style.fontsize)
-            preferences.save("style", "font_family", style.fontfamily)
+    def new(self, isImage = False):
+        name = "Untitled 1"
+        n = 1
+        while name in self.children:
+            n += 1
+            name = "Untitled " + str(n)
+        self.children[name] = child(self, DB + name + ".txt", isImage)
+        self.children[name].show()
+        return name
 
     def action(self, action):
         if action == "new":
-            name = "Untitled 1"
-            n = 1
-            while name in self.children:
-                n += 1
-                name = "Untitled " + str(n)
-            self.children[name] = child(self, DB_DIR + name + ".txt")
-            self.children[name].show()
-            self.last = name
+            self.new()
 
         elif action == "image":
             pixmap = self.clipboardImg()
             if not pixmap.isNull():
-                self.action("new")
-                name = self.children[self.last]
+                name = self.children[self.new(isImage = True)]
                 name.ui.textEdit.hide()
                 name.ui.imageLabel.show()
                 width, height = pixmap.width(), pixmap.height()
@@ -408,8 +444,8 @@ class mother(object):
 
         elif action == "reset":
             #Remove empty notes
-            for f in os.listdir(DB_DIR):
-                if f.endswith(".txt") and os.stat(DB_DIR + f).st_size == 0:
+            for f in os.listdir(DB):
+                if f.endswith(".txt") and os.stat(DB + f).st_size == 0:
                     name = f.rsplit('.', 1)[0]
                     if name in self.children:
                         self.children[name].delete()
@@ -456,38 +492,38 @@ class mother(object):
             self.action(preferences.q["middle_click_action"])
 
 class child(QtWidgets.QWidget):
-    def __init__(self, parent, path):
+    def __init__(self, parent, path, isImage = False):
         super().__init__()
+        self.ui = uic.loadUi(LOCAL + 'gui_child.ui', self)
+        self.profile = profile(path)
         self.parent = parent
         self.path = path
         self.name = path.rsplit('/', 1)[-1].rsplit('.', 1)[0]
-        self.profile = profile(path)
 
-        menu = QtWidgets.QMenu()
+        self.menu = QtWidgets.QMenu()
         icons = ["hide", "quit", "delete", "rename", "tray", "pin_menu", "pin_title", "toggle", "style"]
         self.icon = {}
         for icon in icons:
-            self.icon[icon] = QtGui.QIcon(ICON_DIR + icon + ".svg")
-        menu.addAction(self.icon["hide"], '&Hide', self.hide)
-        menu.addAction(self.icon["pin_menu"], '&Pin', self.pin)
-        menu.addAction(self.icon["rename"], '&Rename', self.rename)
-        menu.addAction(self.icon["style"], "Style", self.setStyle)
-        menu.addSeparator()
-        menu.addAction(self.icon["quit"], 'Close', self.quit)
-        menu.addAction(self.icon["delete"], '&Delete', self.delete)
+            self.icon[icon] = QtGui.QIcon(ICONS + icon + ".svg")
+        self.menu.addAction(self.icon["hide"], '&Hide', self.hide)
+        self.menu.addAction(self.icon["pin_menu"], '&Pin', self.pin)
+        self.menu.addAction(self.icon["rename"], '&Rename', self.rename)
+        if not isImage:
+            self.menu.addAction(self.icon["style"], "Style", lambda: styleDialog(self))
+        self.menu.addSeparator()
+        self.menu.addAction(self.icon["quit"], 'Close', self.quit)
+        self.menu.addAction(self.icon["delete"], '&Delete', self.delete)
 
-        self.ui = gui_child.Ui_Form()
-        self.ui.setupUi(self)
         self.loadStyle()
         self.setWindowTitle(self.name)
         self.setAttribute(Qt.WA_X11NetWmWindowTypeToolBar)
         self.setWindowFlags(Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
 
         self.ui.imageLabel.hide()
-        self.ui.inputText.hide()
-        self.ui.inputLabel.hide()
-        self.ui.inputText.keyPressEvent = self.renameAccept
-        self.ui.inputText.focusOutEvent = self.renameReject
+        self.ui.renameText.hide()
+        self.ui.renameLabel.hide()
+        self.ui.renameText.keyPressEvent = self.renameAccept
+        self.ui.renameText.focusOutEvent = self.renameReject
 
         if self.profile.q["pin"]:
             self.setWindowIcon(self.icon["pin_title"])
@@ -504,7 +540,7 @@ class child(QtWidgets.QWidget):
         self.ui.textEdit.dropEvent = self.dropEvent
         self.ui.textEdit.keyPressEvent = self.keyPressEvent
         self.ui.textEdit.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.ui.textEdit.customContextMenuRequested.connect(lambda: menu.popup(QtGui.QCursor.pos()))
+        self.ui.textEdit.customContextMenuRequested.connect(lambda: self.menu.popup(QtGui.QCursor.pos()))
         self.ui.textEdit.setAttribute(Qt.WA_TranslucentBackground)
 
         if not preferences.q["save_position"] or not self.profile.q["x"] or not self.profile.q["width"]:
@@ -524,19 +560,6 @@ class child(QtWidgets.QWidget):
             self.show()
 
     #Action
-    def setStyle(self):
-        style = styleDialog(self)
-        if style.result():
-            self.profile.save("width", style.width)
-            self.profile.save("height", style.height)
-            self.profile.save("background", style.background)
-            self.profile.save("font_color", style.fontcolor)
-            self.profile.save("font_size", style.fontsize)
-            self.profile.save("font_family", style.fontfamily)
-        else:
-            self.ui.textEdit.viewport().update()
-            self.resize(self.profile.q["width"], self.profile.q["height"])
-
     def focus(self):
         self.show()
         self.activateWindow()
@@ -551,7 +574,7 @@ class child(QtWidgets.QWidget):
         self.profile.load()
         #if self.name in self.profile.db:
         del self.profile.db[self.name]
-        with open(PROFILES_DB, "w+") as f:
+        with open(PROFILES, "w+") as f:
             f.write(json.dumps(self.profile.db, indent=2, sort_keys=False))
 
         #if self.name in self.parent.children:
@@ -597,20 +620,20 @@ class child(QtWidgets.QWidget):
             self.prompt.confirm = True
 
     def rename(self):
-        self.ui.inputLabel.show()
-        self.ui.inputText.setText(self.name)
-        self.ui.inputText.show()
-        self.ui.inputText.setFocus()
-        self.ui.inputText.selectAll()
+        self.ui.renameLabel.show()
+        self.ui.renameText.setText(self.name)
+        self.ui.renameText.show()
+        self.ui.renameText.setFocus()
+        self.ui.renameText.selectAll()
 
     def renameAccept(self, event):
         if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return:
-            name = self.ui.inputText.text()
+            name = self.ui.renameText.text()
             if name and not name == self.name and not name in self.parent.children:
-                entry = self.ui.inputText.text()
+                entry = self.ui.renameText.text()
                 entry = "".join(x for x in entry if x.isalnum() or x is " ") #Remove illegal characters
 
-                with open(PROFILES_DB, "r+") as db:
+                with open(PROFILES, "r+") as db:
                     profiles = json.load(db)
                     profiles[entry] = {}
                     profiles[entry] = profiles[self.name]
@@ -624,23 +647,23 @@ class child(QtWidgets.QWidget):
                 del self.parent.children[self.name]
 
                 if os.path.isfile(self.path):
-                    os.rename(self.path, DB_DIR + entry + ".txt")
-                self.path = DB_DIR + entry + ".txt"
+                    os.rename(self.path, DB + entry + ".txt")
+                self.path = DB + entry + ".txt"
                 self.name = self.path.rsplit('/', 1)[-1].rsplit('.', 1)[0]
                 self.profile.path = self.path
                 self.profile.name = self.name
                 self.profile.load()
                 self.setWindowTitle(entry)
-                self.ui.inputText.hide()
-                self.ui.inputLabel.hide()
+                self.ui.renameText.hide()
+                self.ui.renameLabel.hide()
             else:
                 self.renameReject()
         else:
-            QtWidgets.QLineEdit.keyPressEvent(self.ui.inputText, event)
+            QtWidgets.QLineEdit.keyPressEvent(self.ui.renameText, event)
 
     def renameReject(self, event=None):
-        self.ui.inputText.hide()
-        self.ui.inputLabel.hide()
+        self.ui.renameText.hide()
+        self.ui.renameLabel.hide()
 
     def load(self, name):
         self.loadStyle()
