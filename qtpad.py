@@ -204,10 +204,10 @@ class styleDialog(QtWidgets.QDialog):
         event.accept()
 
     def pickBackgroundColor(self):
-        cw = QtWidgets.QColorDialog(QtGui.QColor(self.background))
-        cw.setWindowFlags(cw.windowFlags() | Qt.WindowStaysOnTopHint)
-        cw.exec()
-        color = cw.selectedColor()
+        colorWidget = QtWidgets.QColorDialog(QtGui.QColor(self.background))
+        colorWidget.setWindowFlags(colorWidget.windowFlags() | Qt.WindowStaysOnTopHint)
+        colorWidget.exec()
+        color = colorWidget.selectedColor()
         if color:
             self.background = color.name()
             self.ui.backgroundLabel.setText(color.name().upper())
@@ -217,10 +217,10 @@ class styleDialog(QtWidgets.QDialog):
                 self.parent.ui.textEdit.viewport().setPalette(palette)
 
     def pickFontColor(self):
-        cw = QtWidgets.QColorDialog(QtGui.QColor(self.fontcolor))
-        cw.setWindowFlags(cw.windowFlags() | Qt.WindowStaysOnTopHint)
-        cw.exec()
-        color = cw.selectedColor()
+        colorWidget = QtWidgets.QColorDialog(QtGui.QColor(self.fontcolor))
+        colorWidget.setWindowFlags(colorWidget.windowFlags() | Qt.WindowStaysOnTopHint)
+        colorWidget.exec()
+        color = colorWidget.selectedColor()
         if color: #if color.isValid():
             self.fontcolor = color.name()
             self.ui.fontcolorLabel.setText(color.name().upper())
@@ -256,7 +256,7 @@ class styleDialog(QtWidgets.QDialog):
 class mother(object):
     def __init__(self, parent=None):
         icons = ["tray", "quit", "file_active", "file_inactive", "enabled", "new", "hide", "show", "none",
-                    "reverse" ,"preferences", "image", "toggle", "reset", "file_pinned", "style"]
+                    "reverse" ,"preferences", "image", "toggle", "reset", "file_pinned", "style", "file_image"]
         self.icon = {}
         for icon in icons:
             self.icon[icon] = QtGui.QIcon(ICONS + icon + ".svg")
@@ -343,6 +343,8 @@ class mother(object):
                 icon = self.icon["file_pinned"]
             elif name in preferences.q["actives"]:
                 icon = self.icon["file_active"]
+            elif self.children[name].isImage:
+                icon = self.icon["file_image"]
             else:
                 icon = self.icon["file_inactive"]
             self.menu.addAction(icon, self.children[name].name, self.children[name].focus)
@@ -372,24 +374,24 @@ class mother(object):
             self.submenu[sm].addAction(self.getIcon(sm, ""), "None", lambda sm=sm: preferences.save("general", sm, ""))
         self.menu.addAction(self.icon["quit"], 'Quit', app.exit)
 
-    def new(self, isImage = False):
-        name = "Untitled 1"
+    def new(self, prefix, isImage = False):
+        name = prefix + " 1"
         n = 1
         while name in self.children:
             n += 1
-            name = "Untitled " + str(n)
+            name = prefix + " " + str(n)
         self.children[name] = child(self, DB + name + ".txt", isImage)
         self.children[name].show()
         return name
 
     def action(self, action):
         if action == "new":
-            self.new()
+            self.new("Untitled")
 
         elif action == "image":
             pixmap = self.clipboardImg()
             if not pixmap.isNull():
-                name = self.children[self.new(isImage = True)]
+                name = self.children[self.new("Image", isImage = True)]
                 name.ui.textEdit.hide()
                 name.ui.imageLabel.show()
                 width, height = pixmap.width(), pixmap.height()
@@ -512,7 +514,10 @@ class child(QtWidgets.QWidget):
         self.menu.addAction(self.icon["hide"], '&Hide', self.hide)
         self.menu.addAction(self.icon["pin_menu"], '&Pin', self.pin)
         self.menu.addAction(self.icon["rename"], '&Rename', self.rename)
-        if not isImage:
+        if isImage:
+            self.isImage = True
+        else:
+            self.isImage = False
             self.menu.addAction(self.icon["style"], "Style", lambda: styleDialog(self))
         self.menu.addSeparator()
         self.menu.addAction(self.icon["quit"], 'Close', self.quit)
@@ -712,6 +717,7 @@ class child(QtWidgets.QWidget):
         self.save()
 
     def resumeKeyPressEvent(self, event):
+        #Accept keypress event then handle the title asterisk*
         QtWidgets.QPlainTextEdit.keyPressEvent(self.ui.textEdit, event)
         if self.ui.textEdit.isVisible():
             content = ""
@@ -727,13 +733,9 @@ class child(QtWidgets.QWidget):
 
     def keyPressEvent(self, event):
         if preferences.q["hotkeys"]:
+            isCtrlShift = int(event.modifiers()) == (Qt.ControlModifier + Qt.ShiftModifier)
+            isCtrl = (event.modifiers() == Qt.ControlModifier)
             key = event.key()
-            if int(event.modifiers()) == (Qt.ControlModifier + Qt.ShiftModifier):
-                isCtrlShift = True
-            else:
-                isCtrl = (event.modifiers() == Qt.ControlModifier)
-                isShift = (event.modifiers() == Qt.ShiftModifier)
-                isAlt = (event.modifiers() == Qt.AltModifier)
 
             #Actions hotkeys
             if key == Qt.Key_H and isCtrl:
@@ -744,6 +746,8 @@ class child(QtWidgets.QWidget):
                 self.rename()
             elif key == Qt.Key_Q and isCtrl:
                 self.quit()
+            elif key == Qt.Key_S and isCtrl:
+                self.save()
             elif key == Qt.Key_Delete and isCtrl:
                 self.delete()
             elif key == Qt.Key_V and isCtrlShift:
@@ -751,38 +755,23 @@ class child(QtWidgets.QWidget):
                 txt = txt.replace("\n", " ").replace("\t", " ")
                 self.ui.textEdit.insertPlainText(txt)
 
-            #Resize hotkeys
-            elif key == Qt.Key_Up and isCtrl:
-                height = self.height() + 20
-            elif key == Qt.Key_Down and isCtrl:
-                height = self.height() - 20
-            elif key == Qt.Key_Right and isCtrl:
-                width = self.width() + 20
-            elif key == Qt.Key_Left and isCtrl:
-                width = self.width() - 20
-
             #Font hotkeys
-            elif key == Qt.Key_Equal and isCtrl and self.ui.textEdit.isVisible():
+            elif key == Qt.Key_Equal and isCtrlAlt and self.ui.textEdit.isVisible():
                 font = self.ui.textEdit.font()
                 size = font.pointSize() + 1
-            elif key == Qt.Key_Minus and isCtrl and self.ui.textEdit.isVisible():
+            elif key == Qt.Key_Minus and isCtrlAlt and self.ui.textEdit.isVisible():
                 font = self.ui.textEdit.font()
                 size = font.pointSize() - 1
 
-            #No hotkeys; accept event then handle the title asterisk*
+            #No hotkeys
             else:
                 self.resumeKeyPressEvent(event)
 
-            #Apply settings, if any
+            #Apply font size settings, if any
             if 'size' in locals() and size > 0:
                 font.setPointSize(size)
                 self.ui.textEdit.setFont(font)
                 self.profile.save("font_size", size)
-
-            elif 'width' in locals() and width > 50:
-                self.resize(width, self.height())
-            elif 'height' in locals() and height > 50:
-                self.resize(self.width(), height)
         else:
             self.resumeKeyPressEvent(event)
 
