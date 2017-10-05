@@ -5,7 +5,6 @@ import time
 import json
 from PyQt5 import QtGui, QtWidgets, QtCore, uic
 from PyQt5.QtCore import Qt, QThread, QObject, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QSystemTrayIcon
 
 LOCAL = os.path.dirname(os.path.realpath(__file__)) + '/'
 ICONS = LOCAL + '/icons/'
@@ -32,6 +31,7 @@ class preferences(object):
                     'top_level': True,
                     'save_position': True,
                     'safe_delete': False,
+                    'hotkeys': True,
                 },
                 'style':
                 {
@@ -57,15 +57,23 @@ class preferences(object):
         self.q["actives"] = self.db["actives"]
 
     def save(self, name, entry, value=None):
-        with open(PREFERENCES) as f:
+        with open(PREFERENCES, "r+") as f:
             self.db = json.load(f)
+            if value is None:
+                self.db[name] = entry
+            else:
+                self.db[name][entry] = value
+            f.seek(0)
+            f.truncate()
+            f.write(json.dumps(self.db, indent=2, sort_keys=False))
+        self.load()
 
-        if value is None:
-            self.db[name] = entry
-        else:
-            self.db[name][entry] = value
-
-        with open(PREFERENCES, "w+") as f:
+    def toggle(self, name, entry):
+        with open(PREFERENCES, "r+") as f:
+            self.db = json.load(f)
+            self.db[name][entry] = not self.db[name][entry]
+            f.seek(0)
+            f.truncate()
             f.write(json.dumps(self.db, indent=2, sort_keys=False))
         self.load()
 
@@ -125,21 +133,18 @@ class styleDialog(QtWidgets.QDialog):
 
         if self.type is child:
             self.setWindowTitle("Style for '" + self.parent.name + "'")
-            self.width = parent.profile.q["width"]
-            self.height = parent.profile.q["height"]
-            self.background = parent.profile.q["background"]
-            self.fontcolor = parent.profile.q["font_color"]
-            self.fontsize = parent.profile.q["font_size"]
-            self.fontfamily = parent.profile.q["font_family"]
+            fetch = parent.profile.q
         else:
             self.setWindowTitle("Default style")
-            self.width = preferences.q["width"]
-            self.height = preferences.q["height"]
-            self.background = preferences.q["background"]
-            self.fontcolor = preferences.q["font_color"]
-            self.fontsize = preferences.q["font_size"]
-            self.fontfamily = preferences.q["font_family"]
+            fetch = preferences.q
             self.ui.defaultOpt.hide()
+
+        self.width = fetch["width"]
+        self.height = fetch["height"]
+        self.background = fetch["background"]
+        self.fontcolor = fetch["font_color"]
+        self.fontsize = fetch["font_size"]
+        self.fontfamily = fetch["font_family"]
 
         font = QtGui.QFont()
         font.setFamily(self.fontfamily)
@@ -161,9 +166,18 @@ class styleDialog(QtWidgets.QDialog):
         self.style = self.exec()
         self.close()
 
+    def save(self, profile):
+        profile("width", self.width)
+        profile("height", self.height)
+        profile("background", self.background)
+        profile("font_color", self.fontcolor)
+        profile("font_size", self.fontsize)
+        profile("font_family", self.fontfamily)
+
     def closeEvent(self, event):
         if self.style:
             if self.type is mother or self.ui.defaultOpt.isChecked():
+                self.save(preferences.save)
                 preferences.save("style", "width", self.width)
                 preferences.save("style", "height", self.height)
                 preferences.save("style", "background", self.background)
@@ -172,12 +186,7 @@ class styleDialog(QtWidgets.QDialog):
                 preferences.save("style", "font_family", self.fontfamily)
 
             if self.type is child:
-                self.parent.profile.save("width", self.width)
-                self.parent.profile.save("height", self.height)
-                self.parent.profile.save("background", self.background)
-                self.parent.profile.save("font_color", self.fontcolor)
-                self.parent.profile.save("font_size", self.fontsize)
-                self.parent.profile.save("font_family", self.fontfamily)
+                self.save(self.parent.profile.save)
 
         elif self.type is child:
             self.parent.ui.textEdit.viewport().update()
@@ -190,13 +199,7 @@ class styleDialog(QtWidgets.QDialog):
                 children = self.parent.parent.children
 
             for f in list(children):
-                children[f].profile.save("background", self.background)
-                children[f].profile.save("width", self.width)
-                children[f].profile.save("height", self.height)
-                children[f].profile.save("background", self.background)
-                children[f].profile.save("font_color", self.fontcolor)
-                children[f].profile.save("font_size", self.fontsize)
-                children[f].profile.save("font_family", self.fontfamily)
+                self.save(children[f].profile.save)
                 children[f].loadStyle()
         event.accept()
 
@@ -218,7 +221,7 @@ class styleDialog(QtWidgets.QDialog):
         cw.setWindowFlags(cw.windowFlags() | Qt.WindowStaysOnTopHint)
         cw.exec()
         color = cw.selectedColor()
-        if color.isValid():
+        if color: #if color.isValid():
             self.fontcolor = color.name()
             self.ui.fontcolorLabel.setText(color.name().upper())
             if self.type is child:
@@ -252,7 +255,7 @@ class styleDialog(QtWidgets.QDialog):
 
 class mother(object):
     def __init__(self, parent=None):
-        icons = ["tray", "quit", "file_active", "file_inactive", "enabled", "new", "hide", "show",
+        icons = ["tray", "quit", "file_active", "file_inactive", "enabled", "new", "hide", "show", "none",
                     "reverse" ,"preferences", "image", "toggle", "reset", "file_pinned", "style"]
         self.icon = {}
         for icon in icons:
@@ -270,7 +273,7 @@ class mother(object):
         self.submenu["startup_action"] = QtWidgets.QMenu("Startup action")
         self.submenu["startup_action"].setIcon(self.icon["preferences"])
         self.submenu["style"] = QtWidgets.QMenu("Default style")
-        self.trayIcon = QSystemTrayIcon()
+        self.trayIcon = QtWidgets.QSystemTrayIcon()
         self.trayIcon.activated.connect(self.clickEvent)
         self.trayIcon.setIcon(self.icon["tray"])
         self.trayIcon.setContextMenu(self.menu)
@@ -312,8 +315,17 @@ class mother(object):
                     pixmap = QtGui.QPixmap(path)
         return pixmap
 
+    def getIcon(self, entry, action = None):
+        if action == preferences.q[entry] or (action is None and preferences.q[entry]):
+            icon = "enabled"
+        else:
+            icon = "none"
+        return self.icon[icon]
+
     def refreshMenu(self):
         self.menu.clear()
+
+        #Actions menu
         self.menu.addAction(self.icon["new"], 'New note', lambda: self.action("new"))
         self.menu.addAction(self.icon["toggle"], 'Toggle actives', lambda: self.action("toggle"))
         if not self.clipboardImg().isNull():
@@ -325,47 +337,39 @@ class mother(object):
         self.menu.addAction(self.icon["reset"], 'Reset', lambda: self.action("reset"))
         self.menu.addSeparator()
 
+        #List of children windows
         for name in self.children:
             if self.children[name].profile.q["pin"]:
-                self.menu.addAction(self.icon["file_pinned"], self.children[name].name, self.children[name].focus)
+                icon = self.icon["file_pinned"]
             elif name in preferences.q["actives"]:
-                self.menu.addAction(self.icon["file_active"], self.children[name].name, self.children[name].focus)
+                icon = self.icon["file_active"]
             else:
-                self.menu.addAction(self.icon["file_inactive"], self.children[name].name, self.children[name].focus)
+                icon = self.icon["file_inactive"]
+            self.menu.addAction(icon, self.children[name].name, self.children[name].focus)
         self.menu.addSeparator()
 
+        #Preferences menus
         self.menu.addMenu(self.submenu["preferences"])
         self.submenu["preferences"].clear()
         self.submenu["preferences"].addAction(self.icon["style"], "Default style", lambda: styleDialog(self))
-        if preferences.q["top_level"]:
-            self.submenu["preferences"].addAction(self.icon["enabled"], 'Always on top', lambda: self.action("top"))
-        else:
-            self.submenu["preferences"].addAction('Always on top', lambda: self.action("top"))
-        if preferences.q["minimize"]:
-            self.submenu["preferences"].addAction(self.icon["enabled"], "Minimize on startup", lambda: preferences.save("general", "minimize", False))
-        else:
-            self.submenu["preferences"].addAction("Minimize on startup", lambda: preferences.save("general", "minimize", True))
-        if preferences.q["save_position"]:
-            self.submenu["preferences"].addAction(self.icon["enabled"], "Save notes position", lambda: preferences.save("general", "save_position", False))
-        else:
-            self.submenu["preferences"].addAction("Save notes position", lambda: preferences.save("general", "save_position", True))
-        if preferences.q["safe_delete"]:
-            self.submenu["preferences"].addAction(self.icon["enabled"], "Safe delete", lambda: preferences.save("general", "safe_delete", False))
-        else:
-            self.submenu["preferences"].addAction("Safe delete", lambda: preferences.save("general", "safe_delete", True))
+        self.submenu["preferences"].addAction(self.getIcon("top_level"), "Always on top", lambda: self.action("top"))
+        self.submenu["preferences"].addAction(self.getIcon("minimize"), "Minimize on startup", lambda: preferences.toggle("general", "minimize"))
+        self.submenu["preferences"].addAction(self.getIcon("save_position"), "Save notes position", lambda: preferences.toggle("general", "save_position"))
+        self.submenu["preferences"].addAction(self.getIcon("hotkeys"), "Hotkeys", lambda: preferences.toggle("general", "hotkeys"))
+        self.submenu["preferences"].addAction(self.getIcon("safe_delete"), "Safe delete", lambda: preferences.toggle("general", "safe_delete"))
 
         menus = ["left_click_action", "middle_click_action", "startup_action"]
         for sm in menus:
             self.submenu["preferences"].addMenu(self.submenu[sm])
             self.submenu[sm].clear()
-            self.submenu[sm].addAction(self.icon["toggle"], "Toggle actives", lambda sm=sm: preferences.save("general", sm, "toggle"))
-            self.submenu[sm].addAction(self.icon["new"], "Create new note", lambda sm=sm: preferences.save("general", sm, "new"))
-            self.submenu[sm].addAction(self.icon["show"], "Show all", lambda sm=sm: preferences.save("general", sm, "show"))
-            self.submenu[sm].addAction(self.icon["hide"], "Hide all", lambda sm=sm: preferences.save("general", sm, "hide"))
-            self.submenu[sm].addAction(self.icon["reverse"], "Reverse all", lambda sm=sm: preferences.save("general", sm, "reverse"))
-            self.submenu[sm].addAction(self.icon["reset"], "Reset notes", lambda sm=sm: preferences.save("general", sm, "reset"))
-            self.submenu[sm].addAction(self.icon["image"], "Paste image", lambda sm=sm: preferences.save("general", sm, "image"))
-            self.submenu[sm].addAction("None", lambda sm=sm: preferences.save("general", sm, ""))
+            self.submenu[sm].addAction(self.getIcon(sm, "toggle"), "Toggle actives", lambda sm=sm: preferences.save("general", sm, "toggle"))
+            self.submenu[sm].addAction(self.getIcon(sm, "new"), "Create new note", lambda sm=sm: preferences.save("general", sm, "new"))
+            self.submenu[sm].addAction(self.getIcon(sm, "show"), "Show all", lambda sm=sm: preferences.save("general", sm, "show"))
+            self.submenu[sm].addAction(self.getIcon(sm, "hide"), "Hide all", lambda sm=sm: preferences.save("general", sm, "hide"))
+            self.submenu[sm].addAction(self.getIcon(sm, "reverse"), "Reverse all", lambda sm=sm: preferences.save("general", sm, "reverse"))
+            self.submenu[sm].addAction(self.getIcon(sm, "reset"), "Reset notes", lambda sm=sm: preferences.save("general", sm, "reset"))
+            self.submenu[sm].addAction(self.getIcon(sm, "image"), "Paste image", lambda sm=sm: preferences.save("general", sm, "image"))
+            self.submenu[sm].addAction(self.getIcon(sm, ""), "None", lambda sm=sm: preferences.save("general", sm, ""))
         self.menu.addAction(self.icon["quit"], 'Quit', app.exit)
 
     def new(self, isImage = False):
@@ -707,56 +711,80 @@ class child(QtWidgets.QWidget):
         QtWidgets.QPlainTextEdit.dropEvent(self.ui.textEdit, event)
         self.save()
 
+    def resumeKeyPressEvent(self, event):
+        QtWidgets.QPlainTextEdit.keyPressEvent(self.ui.textEdit, event)
+        if self.ui.textEdit.isVisible():
+            content = ""
+            if os.path.isfile(self.path):
+                with open(self.path) as f:
+                    content = f.read()
+
+            isSame = (content == self.ui.textEdit.toPlainText())
+            if self.windowTitle()[-1] == "*" and isSame:
+                self.setWindowTitle(self.windowTitle()[:-1])
+            elif not self.windowTitle()[-1] == "*" and not isSame:
+                self.setWindowTitle(self.windowTitle() + "*")
+
     def keyPressEvent(self, event):
-        key = event.key()
-        if int(event.modifiers()) == (Qt.ControlModifier + Qt.ShiftModifier):
-            isCtrl = True
-            isShift = True
+        if preferences.q["hotkeys"]:
+            key = event.key()
+            if int(event.modifiers()) == (Qt.ControlModifier + Qt.ShiftModifier):
+                isCtrlShift = True
+            else:
+                isCtrl = (event.modifiers() == Qt.ControlModifier)
+                isShift = (event.modifiers() == Qt.ShiftModifier)
+                isAlt = (event.modifiers() == Qt.AltModifier)
+
+            #Actions hotkeys
+            if key == Qt.Key_H and isCtrl:
+                self.hide()
+            elif key == Qt.Key_P and isCtrl:
+                self.pin()
+            elif key == Qt.Key_R and isCtrl:
+                self.rename()
+            elif key == Qt.Key_Q and isCtrl:
+                self.quit()
+            elif key == Qt.Key_Delete and isCtrl:
+                self.delete()
+            elif key == Qt.Key_V and isCtrlShift:
+                txt = clipboard.text()
+                txt = txt.replace("\n", " ").replace("\t", " ")
+                self.ui.textEdit.insertPlainText(txt)
+
+            #Resize hotkeys
+            elif key == Qt.Key_Up and isCtrl:
+                height = self.height() + 20
+            elif key == Qt.Key_Down and isCtrl:
+                height = self.height() - 20
+            elif key == Qt.Key_Right and isCtrl:
+                width = self.width() + 20
+            elif key == Qt.Key_Left and isCtrl:
+                width = self.width() - 20
+
+            #Font hotkeys
+            elif key == Qt.Key_Equal and isCtrl and self.ui.textEdit.isVisible():
+                font = self.ui.textEdit.font()
+                size = font.pointSize() + 1
+            elif key == Qt.Key_Minus and isCtrl and self.ui.textEdit.isVisible():
+                font = self.ui.textEdit.font()
+                size = font.pointSize() - 1
+
+            #No hotkeys; accept event then handle the title asterisk*
+            else:
+                self.resumeKeyPressEvent(event)
+
+            #Apply settings, if any
+            if 'size' in locals() and size > 0:
+                font.setPointSize(size)
+                self.ui.textEdit.setFont(font)
+                self.profile.save("font_size", size)
+
+            elif 'width' in locals() and width > 50:
+                self.resize(width, self.height())
+            elif 'height' in locals() and height > 50:
+                self.resize(self.width(), height)
         else:
-            isCtrl = (event.modifiers() == Qt.ControlModifier)
-            isShift = (event.modifiers() == Qt.ShiftModifier)
-            isAlt = (event.modifiers() == Qt.AltModifier)
-            isCaps = (key == Qt.Key_CapsLock)
-
-        if key == Qt.Key_H and isCtrl:
-            self.hide()
-        elif key == Qt.Key_P and isCtrl:
-            self.pin()
-        elif key == Qt.Key_R and isCtrl:
-            self.rename()
-        elif key == Qt.Key_Q and isCtrl:
-            self.quit()
-        elif key == Qt.Key_Delete and isCtrl:
-            self.delete()
-        elif key == Qt.Key_V and isCtrl and isShift:
-            txt = clipboard.text()
-            txt = txt.replace("\n", " ").replace("\t", " ")
-            self.ui.textEdit.insertPlainText(txt)
-
-        elif key == Qt.Key_Up and isCtrl:
-            width, height = self.width() + 20, self.height() + 20
-            self.resize(width, height)
-        elif key == Qt.Key_Down and isCtrl:
-            width, height = self.width() - 20, self.height() - 20
-            self.resize(width, height)
-
-        elif key == Qt.Key_Equal and isCtrl and self.ui.textEdit.isVisible():
-            font = self.ui.textEdit.font()
-            size = font.pointSize() + 1
-        elif key == Qt.Key_Minus and isCtrl and self.ui.textEdit.isVisible():
-            font = self.ui.textEdit.font()
-            size = font.pointSize() - 1
-
-        else:
-            QtWidgets.QPlainTextEdit.keyPressEvent(self.ui.textEdit, event)
-            if not self.windowTitle()[-1] == "*" and self.ui.textEdit.isVisible():
-                if (isCtrl and key == Qt.Key_V) or (not isCtrl and not isAlt and not isCaps):
-                    self.setWindowTitle(self.windowTitle() + "*")
-
-        if 'size' in locals():
-            font.setPointSize(size)
-            self.ui.textEdit.setFont(font)
-            self.profile.save("font_size", size)
+            self.resumeKeyPressEvent(event)
 
     def focusOutEvent(self, event):
         if self.name:
@@ -774,4 +802,3 @@ if __name__== '__main__':
     clipboard = app.clipboard()
     daemon = mother()
     sys.exit(app.exec())
-
