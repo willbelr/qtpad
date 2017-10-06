@@ -756,10 +756,10 @@ class child(QtWidgets.QWidget):
                 self.ui.textEdit.insertPlainText(txt)
 
             #Font hotkeys
-            elif key == Qt.Key_Equal and isCtrlAlt and self.ui.textEdit.isVisible():
+            elif key == Qt.Key_Plus and isCtrlShift and self.ui.textEdit.isVisible():
                 font = self.ui.textEdit.font()
                 size = font.pointSize() + 1
-            elif key == Qt.Key_Minus and isCtrlAlt and self.ui.textEdit.isVisible():
+            elif key == Qt.Key_Underscore and isCtrlShift and self.ui.textEdit.isVisible():
                 font = self.ui.textEdit.font()
                 size = font.pointSize() - 1
 
