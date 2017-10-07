@@ -208,7 +208,7 @@ class styleDialog(QtWidgets.QDialog):
         colorWidget.setWindowFlags(colorWidget.windowFlags() | Qt.WindowStaysOnTopHint)
         colorWidget.exec()
         color = colorWidget.selectedColor()
-        if color:
+        if color.isValid():
             self.background = color.name()
             self.ui.backgroundLabel.setText(color.name().upper())
             if self.type is child:
@@ -221,7 +221,7 @@ class styleDialog(QtWidgets.QDialog):
         colorWidget.setWindowFlags(colorWidget.windowFlags() | Qt.WindowStaysOnTopHint)
         colorWidget.exec()
         color = colorWidget.selectedColor()
-        if color: #if color.isValid():
+        if color.isValid():
             self.fontcolor = color.name()
             self.ui.fontcolorLabel.setText(color.name().upper())
             if self.type is child:
@@ -716,6 +716,15 @@ class child(QtWidgets.QWidget):
         QtWidgets.QPlainTextEdit.dropEvent(self.ui.textEdit, event)
         self.save()
 
+    def focusInEvent(self, event):
+        QtWidgets.QPlainTextEdit.focusInEvent(self.ui.textEdit, event)
+        self.load(self.name)
+
+    def focusOutEvent(self, event):
+        if self.name:
+            QtWidgets.QPlainTextEdit.focusOutEvent(self.ui.textEdit, event)
+            self.save()
+
     def resumeKeyPressEvent(self, event):
         #Accept keypress event then handle the title asterisk*
         QtWidgets.QPlainTextEdit.keyPressEvent(self.ui.textEdit, event)
@@ -774,15 +783,6 @@ class child(QtWidgets.QWidget):
                 self.profile.save("font_size", size)
         else:
             self.resumeKeyPressEvent(event)
-
-    def focusOutEvent(self, event):
-        if self.name:
-            QtWidgets.QPlainTextEdit.focusOutEvent(self.ui.textEdit, event)
-            self.save()
-
-    def focusInEvent(self, event):
-        QtWidgets.QPlainTextEdit.focusInEvent(self.ui.textEdit, event)
-        self.load(self.name)
 
 if __name__== '__main__':
     preferences = preferences()
