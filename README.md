@@ -8,7 +8,7 @@
 - Assign default style for specific notes
 - Auto detect image content/path from clipboard
 - Save on focus out, load on focus in
-- All notes are stored in plain text, identified by their name
+- All notes are stored in plain text or png image, identified by name
 - Many options to quickly manage notes display
 
 # Hotkeys
@@ -19,8 +19,8 @@
 - Ctrl+S: Save
 - Ctrl+Delete: Delete 
 - Ctrl+Shift+V: Paste without newline nor tabs
-- Ctrl+Shift+Plus: Increase font size
-- Ctrl+Shift+Minus: Decrease font size
+- Ctrl+Shift+Plus: Increase font or image size
+- Ctrl+Shift+Minus: Decrease font or image size
 
 # Screenshots
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/mother.png)
