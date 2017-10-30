@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+#"open file" with qtinuptdialog, enter file path to add into children list
+#in image child menu, add option "save image as..."
+#ctrl+shift+u = uppercase, l = lowercase
 import os
 import sys
 import time
@@ -297,16 +300,17 @@ class mother(object):
 
     #Actions
     def cleanProfiles(self):
-        with open(PROFILES, "r+") as db:
-            profiles = json.load(db)
-            for entry in list(profiles):
-                txtPath = DB + entry + ".txt"
-                pngPath = DB + entry + ".png"
-                if not os.path.isfile(pngPath) and (not os.path.isfile(txtPath) or os.stat(txtPath).st_size < 0):
-                    del profiles[entry]
-            db.seek(0)
-            db.truncate()
-            db.write(json.dumps(profiles, indent=2, sort_keys=False))
+        if os.path.isfile(PROFILES):
+            with open(PROFILES, "r+") as db:
+                profiles = json.load(db)
+                for entry in list(profiles):
+                    txtPath = DB + entry + ".txt"
+                    pngPath = DB + entry + ".png"
+                    if not os.path.isfile(pngPath) and (not os.path.isfile(txtPath) or os.stat(txtPath).st_size < 0):
+                        del profiles[entry]
+                db.seek(0)
+                db.truncate()
+                db.write(json.dumps(profiles, indent=2, sort_keys=False))
 
     def clipboardImg(self):
         pixmap = clipboard.pixmap()
