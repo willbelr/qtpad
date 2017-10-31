@@ -19,6 +19,8 @@
 - Ctrl+S: Save
 - Ctrl+Delete: Delete 
 - Ctrl+Shift+V: Paste without newline nor tabs
+- Ctrl+Shift+U: Set selection to uppercase
+- Ctrl+Shift+L: Set selection to lowercase
 - Ctrl+Shift+Plus: Increase font or image size
 - Ctrl+Shift+Minus: Decrease font or image size
 
