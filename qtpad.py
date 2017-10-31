@@ -1,7 +1,4 @@
 #!/usr/bin/python3
-#"open file" with qtinuptdialog, enter file path to add into children list
-#in image child menu, add option "save image as..."
-#ctrl+shift+u = uppercase, l = lowercase
 import os
 import sys
 import time
@@ -408,6 +405,8 @@ class mother(object):
                 f = QtCore.QFile(DB + child.name + ".png")
                 f.open(QtCore.QIODevice.WriteOnly)
                 pixmap.save(f, "PNG")
+                if action == "image-new":
+                    clipboard.setText("")
             elif pixmap.isNull() and action == "image-new":
                 self.new("Untitled")
 
@@ -508,7 +507,7 @@ class child(QtWidgets.QWidget):
         self.name = path.rsplit('/', 1)[-1].rsplit('.', 1)[0]
 
         self.menu = QtWidgets.QMenu()
-        icons = ["hide", "quit", "delete", "rename", "tray", "pin_menu", "pin_title", "toggle", "style"]
+        icons = ["hide", "quit", "delete", "rename", "tray", "pin_menu", "pin_title", "toggle", "style", "image"]
         self.icon = {}
         for icon in icons:
             self.icon[icon] = QtGui.QIcon(ICONS + icon + ".svg")
@@ -518,6 +517,7 @@ class child(QtWidgets.QWidget):
 
         if isImage:
             self.isImage = True
+            self.menu.addAction(self.icon["image"], 'Save image', self.saveImage)
             self.ui.imageLabel.setScaledContents(True)
             self.ui.imageLabel.setContextMenuPolicy(Qt.CustomContextMenu)
             self.ui.imageLabel.customContextMenuRequested.connect(lambda: self.menu.popup(QtGui.QCursor.pos()))
@@ -704,6 +704,15 @@ class child(QtWidgets.QWidget):
         self.ui.renameText.hide()
         self.ui.renameLabel.hide()
 
+    def saveImage(self):
+        saveWidget = QtWidgets.QFileDialog.getSaveFileName(self, "Save image as", self.name, ".png")
+        path = saveWidget[0]
+        if path:
+            path += ".png"
+            f = QtCore.QFile(path)
+            f.open(QtCore.QIODevice.WriteOnly)
+            self.ui.imageLabel.pixmap().save(f, "PNG")
+
     def load(self, name):
         self.loadStyle()
         if os.path.isfile(self.path):
@@ -791,10 +800,18 @@ class child(QtWidgets.QWidget):
                 self.save()
             elif key == Qt.Key_Delete and isCtrl:
                 self.delete()
+
+            #Special actions hotkeys
             elif key == Qt.Key_V and isCtrlShift:
                 txt = clipboard.text()
                 txt = txt.replace("\n", " ").replace("\t", " ")
                 self.ui.textEdit.insertPlainText(txt)
+            elif key == Qt.Key_U and isCtrlShift:
+                cursor = self.ui.textEdit.textCursor()
+                cursor.insertText(cursor.selectedText().upper())
+            elif key == Qt.Key_L and isCtrlShift:
+                cursor = self.ui.textEdit.textCursor()
+                cursor.insertText(cursor.selectedText().lower())
 
             #Resize hotkeys
             elif key == Qt.Key_Plus and isCtrlShift:
