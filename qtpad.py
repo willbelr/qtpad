@@ -766,9 +766,7 @@ class child(QtWidgets.QWidget):
                 QtWidgets.QPlainTextEdit.focusOutEvent(self.ui.textEdit, event)
             self.save()
 
-    def resumeKeyPressEvent(self, event):
-        #Accept keypress event, then handle the title asterisk*
-        QtWidgets.QPlainTextEdit.keyPressEvent(self.ui.textEdit, event)
+    def handleAsterisk(self):
         if self.ui.textEdit.isVisible():
             content = ""
             if os.path.isfile(self.path):
@@ -806,12 +804,43 @@ class child(QtWidgets.QWidget):
                 txt = clipboard.text()
                 txt = txt.replace("\n", " ").replace("\t", " ")
                 self.ui.textEdit.insertPlainText(txt)
+
             elif key == Qt.Key_U and isCtrlShift:
                 cursor = self.ui.textEdit.textCursor()
                 cursor.insertText(cursor.selectedText().upper())
+
             elif key == Qt.Key_L and isCtrlShift:
                 cursor = self.ui.textEdit.textCursor()
                 cursor.insertText(cursor.selectedText().lower())
+
+            elif (key == Qt.Key_Up or key == Qt.Key_Down) and isCtrlShift:
+                self.ui.textEdit.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
+                cursor = self.ui.textEdit.textCursor()
+                cursor.movePosition(QtGui.QTextCursor.StartOfLine);
+                cursor.movePosition(QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor);
+                line = cursor.selectedText()
+                cursor.removeSelectedText()
+
+                if key == Qt.Key_Up:
+                    cursor.movePosition(QtGui.QTextCursor.Left, QtGui.QTextCursor.KeepAnchor);
+                    newline = cursor.selectedText()
+                    cursor.removeSelectedText()
+                    cursor.movePosition(QtGui.QTextCursor.StartOfLine);
+                    cursor.insertText(line + newline)
+                    cursor.movePosition(QtGui.QTextCursor.Up);
+                    cursor.movePosition(QtGui.QTextCursor.EndOfLine);
+                    self.ui.textEdit.setTextCursor(cursor)
+
+                elif key == Qt.Key_Down:
+                    cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor);
+                    newline = cursor.selectedText()
+                    cursor.removeSelectedText()
+                    cursor.movePosition(QtGui.QTextCursor.EndOfLine);
+                    cursor.insertText(newline + line)
+                    self.ui.textEdit.setTextCursor(cursor)
+
+                self.ui.textEdit.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
+                self.handleAsterisk()
 
             #Resize hotkeys
             elif key == Qt.Key_Plus and isCtrlShift:
@@ -827,9 +856,10 @@ class child(QtWidgets.QWidget):
                     font = self.ui.textEdit.font()
                     size = font.pointSize() - 1
 
-            #No hotkeys
+            #No valid hotkeys
             else:
-                self.resumeKeyPressEvent(event)
+                QtWidgets.QPlainTextEdit.keyPressEvent(self.ui.textEdit, event)
+                self.handleAsterisk()
 
             #Apply settings, if any
             if 'size' in locals() and size > 0:
@@ -840,8 +870,11 @@ class child(QtWidgets.QWidget):
                 self.resize(width, self.height())
             if 'height' in locals() and height > 50:
                 self.resize(self.width(), height)
+
+        #No hotkeys
         else:
-            self.resumeKeyPressEvent(event)
+            QtWidgets.QPlainTextEdit.keyPressEvent(self.ui.textEdit, event)
+            self.handleAsterisk()
 
 if __name__== '__main__':
     preferences = preferences()
