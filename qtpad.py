@@ -7,8 +7,8 @@ from PyQt5 import QtGui, QtWidgets, QtCore, uic
 from PyQt5.QtCore import Qt, QThread, QObject, pyqtSignal, pyqtSlot
 
 LOCAL = os.path.dirname(os.path.realpath(__file__)) + '/'
-ICONS = LOCAL + '/icons/'
-DB = LOCAL + "/db/"
+ICONS = LOCAL + 'icons/'
+DB = LOCAL + "db/"
 PREFERENCES = DB + "preferences.json"
 PROFILES = DB + "profiles.json"
 if not os.path.exists(DB):
@@ -518,6 +518,7 @@ class child(QtWidgets.QWidget):
         if isImage:
             self.isImage = True
             self.menu.addAction(self.icon["image"], 'Save image', self.saveImage)
+            self.menu.addAction(self.icon["image"], 'Copy to clipboard', self.toClipboard)
             self.ui.imageLabel.setScaledContents(True)
             self.ui.imageLabel.setContextMenuPolicy(Qt.CustomContextMenu)
             self.ui.imageLabel.customContextMenuRequested.connect(lambda: self.menu.popup(QtGui.QCursor.pos()))
@@ -713,6 +714,9 @@ class child(QtWidgets.QWidget):
             f.open(QtCore.QIODevice.WriteOnly)
             self.ui.imageLabel.pixmap().save(f, "PNG")
 
+    def toClipboard(self):
+        clipboard.setPixmap(self.ui.imageLabel.pixmap())
+
     def load(self, name):
         self.loadStyle()
         if os.path.isfile(self.path):
@@ -828,8 +832,7 @@ class child(QtWidgets.QWidget):
                     cursor.movePosition(QtGui.QTextCursor.StartOfLine);
                     cursor.insertText(line + newline)
                     cursor.movePosition(QtGui.QTextCursor.Up);
-                    cursor.movePosition(QtGui.QTextCursor.EndOfLine);
-                    self.ui.textEdit.setTextCursor(cursor)
+                    cursor.movePosition(QtGui.QTextCursor.StartOfLine);
 
                 elif key == Qt.Key_Down:
                     cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor);
@@ -837,8 +840,8 @@ class child(QtWidgets.QWidget):
                     cursor.removeSelectedText()
                     cursor.movePosition(QtGui.QTextCursor.EndOfLine);
                     cursor.insertText(newline + line)
-                    self.ui.textEdit.setTextCursor(cursor)
 
+                self.ui.textEdit.setTextCursor(cursor)
                 self.ui.textEdit.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
                 self.handleAsterisk()
 
