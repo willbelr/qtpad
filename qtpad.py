@@ -5,7 +5,6 @@ import time
 import json
 from PyQt5 import QtGui, QtWidgets, QtCore, uic
 from PyQt5.QtCore import Qt, QThread, QObject, pyqtSignal, pyqtSlot
-
 LOCAL = os.path.dirname(os.path.realpath(__file__)) + '/'
 ICONS = LOCAL + 'icons/'
 DB = LOCAL + "db/"
@@ -25,7 +24,7 @@ class preferences(object):
                 'general':
                 {
                     'left_click_action': 'toggle',
-                    'middle_click_action': 'new',
+                    'middle_click_action': 'image-new',
                     'startup_action': '',
                     'minimize': True,
                     'top_level': True,
@@ -506,6 +505,11 @@ class child(QtWidgets.QWidget):
         self.path = path
         self.name = path.rsplit('/', 1)[-1].rsplit('.', 1)[0]
 
+        self.sizeGrip = QtWidgets.QSizeGrip(self.ui.textEdit)
+        self.gridLayout.addWidget(self.sizeGrip)
+        self.gridLayout.setAlignment(self.sizeGrip, Qt.AlignRight)
+        self.sizeGrip.hide()
+
         self.menu = QtWidgets.QMenu()
         icons = ["hide", "quit", "delete", "rename", "tray", "pin_menu", "pin_title", "toggle", "style", "image"]
         self.icon = {}
@@ -627,9 +631,11 @@ class child(QtWidgets.QWidget):
     def loadStyle(self):
         self.profile.load()
         palette = self.ui.textEdit.viewport().palette()
+        palette.setColor(QtGui.QPalette.Background, QtGui.QColor(self.profile.q["background"]))
         palette.setColor(QtGui.QPalette.Base, QtGui.QColor(self.profile.q["background"]))
         palette.setColor(QtGui.QPalette.Text, QtGui.QColor(self.profile.q["font_color"]))
         self.ui.textEdit.viewport().setPalette(palette)
+        self.ui.setPalette(palette)
 
         font = self.ui.textEdit.font()
         font.setFamily(self.profile.q["font_family"])
@@ -637,6 +643,7 @@ class child(QtWidgets.QWidget):
         self.ui.textEdit.setFont(font)
 
         self.ui.textEdit.viewport().update()
+        self.ui.update()
 
     def pin(self):
         if self.profile.q["pin"]:
@@ -804,6 +811,12 @@ class child(QtWidgets.QWidget):
                 self.delete()
 
             #Special actions hotkeys
+            elif key == Qt.Key_R and isCtrlShift:
+                if self.sizeGrip.isVisible():
+                    self.sizeGrip.hide()
+                else:
+                    self.sizeGrip.show()
+
             elif key == Qt.Key_V and isCtrlShift:
                 txt = clipboard.text()
                 txt = txt.replace("\n", " ").replace("\t", " ")
