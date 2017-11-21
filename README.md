@@ -13,12 +13,10 @@
 - Many options available, which can all be set using the tray icon menu
 
 # Screenshots
+![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/child.png)
+
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/mother.png)
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/style.png)
-
-![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/child.png)
-![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/rename.png)
-![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/image.png)
 
 # Hotkeys
 - Ctrl+H: Hide
