@@ -6,11 +6,18 @@
 - Customize actions of left and middle click on the tray icon
 - Customize default style for all new notes
 - Customize style for specific notes
-- Auto detect image content/path from clipboard
+- Auto detect image content or path from clipboard
 - Auto save when loosing focus, and auto load when gaining focus
 - Indication of unsaved changes by an asterisk* at the end of the note title 
 - All notes are locally stored in plain text, identified by their name
 - Many options available, which can all be set using the tray icon menu
+
+# Screenshots
+![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/mother.png)
+![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/style.png)
+
+![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/child.png)
+![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/rename.png)
 
 # Hotkeys
 - Ctrl+H: Hide
@@ -27,13 +34,6 @@
 - Ctrl+Shift+Down: Shift current line down
 - Ctrl+Shift+Plus: Increase font or image size
 - Ctrl+Shift+Minus: Decrease font or image size
-
-# Screenshots
-![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/mother.png)
-![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/style.png)
-
-![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/child.png)
-![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/rename.png)
 
 # Dependencies
 - Require Python 3+, Qt5 with svg package enabled 
