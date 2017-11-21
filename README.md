@@ -21,6 +21,7 @@
 - Ctrl+Shift+V: Paste without newline nor tabs
 - Ctrl+Shift+U: Set selection to uppercase
 - Ctrl+Shift+L: Set selection to lowercase
+- Ctrl+Shift+R: Toggle visibility of a resize corner
 - Ctrl+Shift+Up: Shift current line up
 - Ctrl+Shift+Down: Shift current line down
 - Ctrl+Shift+Plus: Increase font or image size
