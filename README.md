@@ -4,12 +4,13 @@
 
 # Features
 - Customize actions of left and middle click on the tray icon
-- Customize default style for all notes
-- Assign default style for specific notes
+- Customize default style for all new notes
+- Customize style for specific notes
 - Auto detect image content/path from clipboard
-- Save on focus out, load on focus in
-- All notes are stored in plain text or png image, identified by name
-- Many options to quickly manage notes display
+- Auto save when loosing focus, and auto load when gaining focus
+- Indication of unsaved changes by an asterisk* at the end of the note title 
+- All notes are locally stored in plain text, identified by name
+- Many options available, which can all be set using the tray icon menu
 
 # Hotkeys
 - Ctrl+H: Hide
@@ -37,4 +38,4 @@
 # Dependencies
 - Require Python 3+, Qt5 with svg package enabled 
 - Made on Linux, might work on other platforms
-- Only tested on Openbox, please report any problem :)
+- Only tested with Openbox and tint2, please report any problem :)
