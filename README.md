@@ -18,6 +18,7 @@
 
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/child.png)
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/rename.png)
+![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/image.png)
 
 # Hotkeys
 - Ctrl+H: Hide
