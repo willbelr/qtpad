@@ -29,7 +29,7 @@ class preferences(object):
                     'minimize': True,
                     'top_level': True,
                     'save_position': True,
-                    'safe_delete': False,
+                    'safe_delete': True,
                     'hotkeys': True,
                 },
                 'style':
@@ -279,22 +279,29 @@ class mother(object):
         self.trayIcon.show()
 
         self.children = {}
-        for f in os.listdir(DB):
-            if f.endswith(".txt"):
-                name = f.rsplit('.', 1)[0]
-                if os.stat(DB + f).st_size > 0:
-                    self.children[name] = child(self, DB + f)
-                else:
-                    os.remove(DB + f)
-            elif f.endswith(".png"):
-                name = f.rsplit('.', 1)[0]
-                self.children[name] = child(self, DB + f, True)
-        self.cleanProfiles()
-
+        self.load()
         if preferences.q["startup_action"]:
             self.action(preferences.q["startup_action"])
 
+    def load(self):
+        for f in os.listdir(DB):
+            name = f.rsplit('.', 1)[0]
+            if not name in self.children:
+                if f.endswith(".txt"):
+                    if os.stat(DB + f).st_size > 0:
+                        self.children[name] = child(self, DB + f)
+                    else:
+                        os.remove(DB + f)
+                elif f.endswith(".png"):
+                    self.children[name] = child(self, DB + f, True)
+        self.cleanProfiles()
+
     #Actions
+    def cleanOrphans(self):
+        for f in list(self.children):
+            if not os.path.isfile(self.children[f].path):
+                self.children[f].delete()
+
     def cleanProfiles(self):
         if os.path.isfile(PROFILES):
             with open(PROFILES, "r+") as db:
@@ -327,6 +334,9 @@ class mother(object):
         return self.icon[icon]
 
     def refreshMenu(self):
+        #Monitor changes in the database directory, clear old menu
+        self.load()
+        self.cleanOrphans()
         self.menu.clear()
 
         #Actions menu
@@ -455,12 +465,8 @@ class mother(object):
                     if name in self.children:
                         self.children[name].delete()
 
-            #Remove notes without assigned file
-            for f in list(self.children):
-                if not os.path.isfile(self.children[f].path):
-                    self.children[f].delete()
-
-            #Remove unassigned profiles
+            #Remove orhans and unassigned profiles
+            self.cleanOrphans()
             self.cleanProfiles()
 
             #Reset position
@@ -511,7 +517,7 @@ class child(QtWidgets.QWidget):
         self.sizeGrip.hide()
 
         self.menu = QtWidgets.QMenu()
-        icons = ["hide", "quit", "delete", "rename", "tray", "pin_menu", "pin_title", "toggle", "style", "image", "file_inactive"]
+        icons = ["hide", "delete", "rename", "tray", "pin_menu", "pin_title", "toggle", "style", "image", "file_inactive"]
         self.icon = {}
         for icon in icons:
             self.icon[icon] = QtGui.QIcon(ICONS + icon + ".svg")
@@ -521,7 +527,7 @@ class child(QtWidgets.QWidget):
 
         if isImage:
             self.isImage = True
-            self.menu.addAction(self.icon["image"], 'Save image ad', self.imageToFile)
+            self.menu.addAction(self.icon["image"], 'Save image as', self.imageToFile)
             self.menu.addAction(self.icon["image"], 'Copy to clipboard', self.imageToClipboard)
             self.ui.imageLabel.setScaledContents(True)
             self.ui.imageLabel.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -542,7 +548,6 @@ class child(QtWidgets.QWidget):
             self.ui.textEdit.setAttribute(Qt.WA_TranslucentBackground)
 
         self.menu.addSeparator()
-        self.menu.addAction(self.icon["quit"], 'Close', self.quit)
         self.menu.addAction(self.icon["delete"], '&Delete', self.delete)
 
         self.loadStyle()
@@ -605,27 +610,29 @@ class child(QtWidgets.QWidget):
         self.show()
         self.activateWindow()
 
-    def quit(self):
-        #if self.name in self.parent.children:
-        del self.parent.children[self.name]
-        self.name = ""
-        self.close()
-
     def delete(self):
-        self.profile.load()
-        #if self.name in self.profile.db:
-        del self.profile.db[self.name]
-        with open(PROFILES, "w+") as f:
-            f.write(json.dumps(self.profile.db, indent=2, sort_keys=False))
-
-        #if self.name in self.parent.children:
-        del self.parent.children[self.name]
-
         if os.path.isfile(self.path):
             if preferences.q["safe_delete"] and os.stat(self.path).st_size > 0:
-                os.rename(self.path, self.path + ".old")
+                msg = QtWidgets.QMessageBox()
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                msg.setWindowTitle("Delete confirmation")
+                msg.setText("Please confirm deletion of '" + self.name + "'")
+                msg.setStandardButtons(QtWidgets.QMessageBox.Apply | QtWidgets.QMessageBox.Cancel)
+                if msg.exec() == QtWidgets.QMessageBox.Apply:
+                    self.remove()
             else:
-                os.remove(self.path)
+                self.remove()
+
+    def remove(self):
+        self.profile.load()
+        if self.name in self.profile.db:
+            del self.profile.db[self.name]
+            with open(PROFILES, "w+") as f:
+                f.write(json.dumps(self.profile.db, indent=2, sort_keys=False))
+
+        #if self.name in self.parent.children:
+        del self.parent.children[self.name]
+        os.remove(self.path)
         self.name = ""
         self.close()
 
@@ -675,8 +682,9 @@ class child(QtWidgets.QWidget):
         if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return:
             name = self.ui.renameText.text()
             if name and not name == self.name and not name in self.parent.children:
+                #Remove illegal characters
                 entry = self.ui.renameText.text()
-                entry = "".join(x for x in entry if x.isalnum() or x is " ") #Remove illegal characters
+                entry = "".join(x for x in entry if x.isalnum() or x is " ")
 
                 with open(PROFILES, "r+") as db:
                     profiles = json.load(db)
@@ -813,8 +821,6 @@ class child(QtWidgets.QWidget):
                 self.pin()
             elif key == Qt.Key_R and isCtrl:
                 self.rename()
-            elif key == Qt.Key_Q and isCtrl:
-                self.quit()
             elif key == Qt.Key_S and isCtrl:
                 self.save()
             elif key == Qt.Key_Delete and isCtrl:
