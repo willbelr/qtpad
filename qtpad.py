@@ -338,7 +338,7 @@ class mother(object):
         self.menu.addAction(self.icon["hide"], 'Hide all', lambda: self.action("hide"))
         self.menu.addAction(self.icon["show"], 'Show all', lambda: self.action("show"))
         self.menu.addAction(self.icon["reverse"], 'Reverse all', lambda: self.action("reverse"))
-        self.menu.addAction(self.icon["reset"], 'Reset', lambda: self.action("reset"))
+        self.menu.addAction(self.icon["reset"], 'Reset positions', lambda: self.action("reset"))
         self.menu.addSeparator()
 
         #List of children windows
@@ -511,7 +511,7 @@ class child(QtWidgets.QWidget):
         self.sizeGrip.hide()
 
         self.menu = QtWidgets.QMenu()
-        icons = ["hide", "quit", "delete", "rename", "tray", "pin_menu", "pin_title", "toggle", "style", "image"]
+        icons = ["hide", "quit", "delete", "rename", "tray", "pin_menu", "pin_title", "toggle", "style", "image", "file_inactive"]
         self.icon = {}
         for icon in icons:
             self.icon[icon] = QtGui.QIcon(ICONS + icon + ".svg")
@@ -521,8 +521,8 @@ class child(QtWidgets.QWidget):
 
         if isImage:
             self.isImage = True
-            self.menu.addAction(self.icon["image"], 'Save image', self.saveImage)
-            self.menu.addAction(self.icon["image"], 'Copy to clipboard', self.toClipboard)
+            self.menu.addAction(self.icon["image"], 'Save image ad', self.imageToFile)
+            self.menu.addAction(self.icon["image"], 'Copy to clipboard', self.imageToClipboard)
             self.ui.imageLabel.setScaledContents(True)
             self.ui.imageLabel.setContextMenuPolicy(Qt.CustomContextMenu)
             self.ui.imageLabel.customContextMenuRequested.connect(lambda: self.menu.popup(QtGui.QCursor.pos()))
@@ -532,6 +532,7 @@ class child(QtWidgets.QWidget):
             self.isImage = False
             self.ui.imageLabel.hide()
             self.menu.addAction(self.icon["style"], "Style", lambda: styleDialog(self))
+            self.menu.addAction(self.icon["file_inactive"], 'Save text as', self.textToFile)
             self.ui.textEdit.focusOutEvent = self.focusOutEvent
             self.ui.textEdit.focusInEvent = self.focusInEvent
             self.ui.textEdit.dropEvent = self.dropEvent
@@ -635,7 +636,6 @@ class child(QtWidgets.QWidget):
         palette.setColor(QtGui.QPalette.Base, QtGui.QColor(self.profile.q["background"]))
         palette.setColor(QtGui.QPalette.Text, QtGui.QColor(self.profile.q["font_color"]))
         self.ui.textEdit.viewport().setPalette(palette)
-        self.ui.setPalette(palette)
 
         font = self.ui.textEdit.font()
         font.setFamily(self.profile.q["font_family"])
@@ -643,7 +643,9 @@ class child(QtWidgets.QWidget):
         self.ui.textEdit.setFont(font)
 
         self.ui.textEdit.viewport().update()
-        self.ui.update()
+        if not self.isImage:
+            self.ui.setPalette(palette)
+            self.ui.update()
 
     def pin(self):
         if self.profile.q["pin"]:
@@ -712,7 +714,15 @@ class child(QtWidgets.QWidget):
         self.ui.renameText.hide()
         self.ui.renameLabel.hide()
 
-    def saveImage(self):
+    def textToFile(self):
+        saveWidget = QtWidgets.QFileDialog.getSaveFileName(self, "Save text as", self.name, ".txt")
+        path = saveWidget[0]
+        if path:
+            path += ".txt"
+            with open(path, 'w') as f:
+                f.write(self.ui.textEdit.toPlainText())
+
+    def imageToFile(self):
         saveWidget = QtWidgets.QFileDialog.getSaveFileName(self, "Save image as", self.name, ".png")
         path = saveWidget[0]
         if path:
@@ -721,7 +731,7 @@ class child(QtWidgets.QWidget):
             f.open(QtCore.QIODevice.WriteOnly)
             self.ui.imageLabel.pixmap().save(f, "PNG")
 
-    def toClipboard(self):
+    def imageToClipboard(self):
         clipboard.setPixmap(self.ui.imageLabel.pixmap())
 
     def load(self, name):
