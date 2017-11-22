@@ -22,7 +22,6 @@
 - Ctrl+H: Hide
 - Ctrl+P: Pin
 - Ctrl+R: Rename
-- Ctrl+Q: Close
 - Ctrl+S: Save
 - Ctrl+Delete: Delete 
 - Ctrl+Shift+V: Paste without newline nor tabs
