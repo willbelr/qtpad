@@ -162,7 +162,7 @@ class styleDialog(QtWidgets.QDialog):
         self.ui.heightOpt.valueChanged.connect(self.updateHeight)
         self.ui.fontsizeOpt.valueChanged.connect(self.updateFontsize)
 
-        self.style = self.exec()
+        self.style = self.exec_()
         self.close()
 
     def save(self, profile):
@@ -205,7 +205,7 @@ class styleDialog(QtWidgets.QDialog):
     def pickColor(self):
         colorWidget = QtWidgets.QColorDialog(QtGui.QColor(self.background))
         colorWidget.setWindowFlags(colorWidget.windowFlags() | Qt.WindowStaysOnTopHint)
-        colorWidget.exec()
+        colorWidget.exec_()
         return colorWidget.selectedColor()
 
     def pickBackgroundColor(self):
@@ -618,7 +618,7 @@ class child(QtWidgets.QWidget):
                 msg.setWindowTitle("Delete confirmation")
                 msg.setText("Please confirm deletion of '" + self.name + "'")
                 msg.setStandardButtons(QtWidgets.QMessageBox.Apply | QtWidgets.QMessageBox.Cancel)
-                if msg.exec() == QtWidgets.QMessageBox.Apply:
+                if msg.exec_() == QtWidgets.QMessageBox.Apply:
                     self.remove()
             else:
                 self.remove()
@@ -914,4 +914,4 @@ if __name__== '__main__':
     app.setQuitOnLastWindowClosed(False)
     clipboard = app.clipboard()
     daemon = mother()
-    sys.exit(app.exec())
+    sys.exit(app.exec_())
