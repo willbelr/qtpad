@@ -202,31 +202,52 @@ class styleDialog(QtWidgets.QDialog):
                 children[f].loadStyle()
         event.accept()
 
-    def pickColor(self):
-        colorWidget = QtWidgets.QColorDialog(QtGui.QColor(self.background))
-        colorWidget.setWindowFlags(colorWidget.windowFlags() | Qt.WindowStaysOnTopHint)
-        colorWidget.exec_()
-        return colorWidget.selectedColor()
+    def pickColor(self, target):
+        self.target = target
+        self.colorWidget = QtWidgets.QColorDialog(QtGui.QColor(self.background))
+        self.colorWidget.setWindowFlags(self.colorWidget.windowFlags() | Qt.WindowStaysOnTopHint)
+        self.colorWidget.currentColorChanged.connect(self.colorChanged)
+        self.colorWidget.exec_()
+        return self.colorWidget.selectedColor()
+
+    def colorChanged(self):
+        color = self.colorWidget.currentColor()
+        if self.target == "background":
+            self.setBackgroundColor(color)
+        elif self.target == "font":
+            self.setFontColor(color)
+
+    def setBackgroundColor(self, color):
+        if self.type is child:
+            palette = self.parent.ui.textEdit.viewport().palette()
+            palette.setColor(QtGui.QPalette.Base, color)
+            self.parent.ui.textEdit.viewport().setPalette(palette)
 
     def pickBackgroundColor(self):
-        color = self.pickColor()
+        color = self.pickColor("background")
         if color.isValid():
             self.background = color.name()
             self.ui.backgroundLabel.setText(color.name().upper())
-            if self.type is child:
-                palette = self.parent.ui.textEdit.viewport().palette()
-                palette.setColor(QtGui.QPalette.Base, color)
-                self.parent.ui.textEdit.viewport().setPalette(palette)
+            self.setBackgroundColor(color)
+        else:
+            color = QtGui.QColor(self.ui.backgroundLabel.text())
+            self.setBackgroundColor(color)
+
+    def setFontColor(self, color):
+        if self.type is child:
+            palette = self.parent.ui.textEdit.viewport().palette()
+            palette.setColor(QtGui.QPalette.Text, color)
+            self.parent.ui.textEdit.viewport().setPalette(palette)
 
     def pickFontColor(self):
-        color = self.pickColor()
+        color = self.pickColor("font")
         if color.isValid():
             self.fontcolor = color.name()
             self.ui.fontcolorLabel.setText(color.name().upper())
-            if self.type is child:
-                palette = self.parent.ui.textEdit.viewport().palette()
-                palette.setColor(QtGui.QPalette.Text, color)
-                self.parent.ui.textEdit.viewport().setPalette(palette)
+            self.setFontColor(color)
+        else:
+            color = QtGui.QColor(self.ui.fontcolorLabel.text())
+            self.setFontColor(color)
 
     def updateWidth(self):
         self.width = self.ui.widthOpt.value()
@@ -846,15 +867,20 @@ class child(QtWidgets.QWidget):
                 cursor = self.ui.textEdit.textCursor()
                 cursor.insertText(cursor.selectedText().lower())
 
-            elif (key == Qt.Key_Up or key == Qt.Key_Down) and isCtrlShift:
+            elif (key == Qt.Key_Up or key == Qt.Key_Down or key == Qt.Key_D) and isCtrlShift:
                 self.ui.textEdit.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
                 cursor = self.ui.textEdit.textCursor()
                 cursor.movePosition(QtGui.QTextCursor.StartOfLine);
                 cursor.movePosition(QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor);
                 line = cursor.selectedText()
-                cursor.removeSelectedText()
 
-                if key == Qt.Key_Up:
+                #Duplicate line
+                if key == Qt.Key_D:
+                    cursor.insertText(line + "\n" + line)
+
+                #Shift line up
+                elif key == Qt.Key_Up:
+                    cursor.removeSelectedText()
                     cursor.movePosition(QtGui.QTextCursor.Left, QtGui.QTextCursor.KeepAnchor);
                     newline = cursor.selectedText()
                     cursor.removeSelectedText()
@@ -863,7 +889,9 @@ class child(QtWidgets.QWidget):
                     cursor.movePosition(QtGui.QTextCursor.Up);
                     cursor.movePosition(QtGui.QTextCursor.StartOfLine);
 
+                #Shift line down
                 elif key == Qt.Key_Down:
+                    cursor.removeSelectedText()
                     cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor);
                     newline = cursor.selectedText()
                     cursor.removeSelectedText()
