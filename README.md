@@ -35,6 +35,6 @@
 - Ctrl+Shift+Minus: Decrease font or image size
 
 # Dependencies
-- Require Python 3+, Qt5 with svg package enabled 
+- Require Python 3 with Qt5 packages, including qt5-svg and python-pyqt5 (python3-pyqt5 on debian) 
 - Made on Linux, might work on other platforms
 - Only tested with Openbox and tint2, please report any problem :)
