@@ -275,6 +275,9 @@ class styleDialog(QtWidgets.QDialog):
 
 class mother(object):
     def __init__(self, parent=None):
+        self.children = {}
+        self.load()
+
         icons = ["tray", "quit", "file_active", "file_inactive", "enabled", "new", "hide", "show", "none",
                     "reverse" ,"preferences", "image", "toggle", "reset", "file_pinned", "style", "file_image"]
         self.icon = {}
@@ -295,12 +298,16 @@ class mother(object):
         self.submenu["style"] = QtWidgets.QMenu("Default style")
         self.trayIcon = QtWidgets.QSystemTrayIcon()
         self.trayIcon.activated.connect(self.clickEvent)
-        self.trayIcon.setIcon(self.icon["tray"])
+
+        #Handle svg to pixmap conversion (KDE compatibility)
+        trayIcon = self.icon["tray"].pixmap(64, 64)
+        trayIcon = QtGui.QIcon(trayIcon)
+        self.trayIcon.setIcon(trayIcon)
+
+        self.refreshMenu()
         self.trayIcon.setContextMenu(self.menu)
         self.trayIcon.show()
 
-        self.children = {}
-        self.load()
         if preferences.q["startup_action"]:
             self.action(preferences.q["startup_action"])
 
@@ -421,6 +428,7 @@ class mother(object):
         else:
             self.children[name] = child(self, DB + name + ".txt", isImage)
         self.children[name].show()
+        self.children[name].activateWindow()
         return name
 
     def action(self, action):
@@ -573,8 +581,11 @@ class child(QtWidgets.QWidget):
 
         self.loadStyle()
         self.setWindowTitle(self.name)
-        self.setAttribute(Qt.WA_X11NetWmWindowTypeToolBar)
         self.setWindowFlags(Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
+        if os.environ.get('DESKTOP_SESSION') == "openbox":
+            self.setAttribute(Qt.WA_X11NetWmWindowTypeToolBar)
+        else:
+            self.setAttribute(Qt.WA_X11NetWmWindowTypeUtility)
 
         self.ui.renameText.hide()
         self.ui.renameLabel.hide()
