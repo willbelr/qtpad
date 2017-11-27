@@ -37,4 +37,7 @@
 # Dependencies
 - Require Python 3 with Qt5 packages, including qt5-svg and python-pyqt5 (python3-pyqt5 on debian) 
 - Made on Linux, might work on other platforms
-- Only tested with Openbox and tint2, please report any problem :)
+- Tested on Openbox and tint2, KDE 5. Please report any problem :)
+
+# Known bug
+- Odd handling of the tray icon context menu on KDE
