@@ -35,16 +35,18 @@
 - Ctrl+Shift+Minus: Decrease font or image size
 
 # Installation
-Require Python 3 with Qt5, including qt5-svg module. Installation will vary according to your platform:
+Require Python 3 with Qt5, including qt5-svg module. Installation will vary according to your kernel:
 - Arch: sudo pacman -Syu python-pyqt5 qt5-svg
 - Debian: sudo apt-get install python3-pyqt5 libqt5svg5
 - Windows: Open the command prompt with administrator privileges and type 'python -m pip install pyqt5'
 
 # Compatibility
-qtPad is developed on Openbox, but it also work on other platforms. Altough, they are not tested as often so please report any problem :)
+qtPad is developed on Openbox. Altough not tested as often, it will also work on other platforms:
 - Linux: Openbox, MATE, Cinnamon, XFCE, Deepin, KDE Plasma 5 
 - Microsoft: Windows 7
 
 Known bugs:
 - KDE: Odd handling of the tray icon context menu
 - Deepin: Status icon is not shown in the titlebar
+ 
+ Please report all issues on Github :)
