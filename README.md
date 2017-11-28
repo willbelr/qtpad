@@ -35,9 +35,9 @@
 - Ctrl+Shift+Minus: Decrease font or image size
 
 # Installation
-Require Python 3 with Qt5, including qt5-svg module. Installation will vary according to your kernel:
-- Arch: sudo pacman -Syu python-pyqt5 qt5-svg
-- Debian: sudo apt-get install python3-pyqt5 libqt5svg5
+Require Python 3, Qt5 and Qt5-SVG module. Installation will vary according to your kernel:
+- Arch: 'sudo pacman -Syu python-pyqt5 qt5-svg'
+- Debian: 'sudo apt-get install python3-pyqt5 libqt5svg5'
 - Windows: Open the command prompt with administrator privileges and type 'python -m pip install pyqt5'
 
 # Compatibility
