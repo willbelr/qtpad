@@ -23,7 +23,6 @@
 - Ctrl+P: Pin
 - Ctrl+R: Rename
 - Ctrl+S: Save
-- Ctrl+Delete: Delete 
 - Ctrl+Shift+V: Paste without newline nor tabs
 - Ctrl+Shift+U: Set selection to uppercase
 - Ctrl+Shift+L: Set selection to lowercase
@@ -46,7 +45,11 @@ qtPad is developed on Openbox. Altough not tested as often, it will also work on
 - Microsoft: Windows 7
 
 Known bugs:
+- Current font family is not loaded in style dialog font combo box
 - KDE: Odd handling of the tray icon context menu
+- KDE: Cannot override context menu style
 - Deepin: Status icon is not shown in the titlebar
  
+ # Troubleshooting
+ - KeyError: remove preferences.json and/or profile.json from /db/ and restart the script
  Please report all issues on Github :)
