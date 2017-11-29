@@ -52,4 +52,5 @@ Known bugs:
  
  # Troubleshooting
  - KeyError: remove preferences.json and/or profile.json from /db/ and restart the script
+ 
  Please report all issues on Github :)
