@@ -14,10 +14,10 @@
 
 # Screenshots (not up-to-date)
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/child.png)
+![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/context_menu.png)
 
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/quickstyle.png)
-
-![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/mother.png)
+![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/preferences.png)    
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/style.png)
 
 # Hotkeys
