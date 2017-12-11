@@ -12,7 +12,7 @@
 - All notes are locally stored in plain text, identified by their name
 - Many options available, which can all be set using the tray icon menu
 
-# Screenshots
+# Screenshots (not up-to-date)
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/child.png)
 
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/quickstyle.png)
@@ -48,11 +48,5 @@ qtPad is developed on Openbox. Altough not tested as often, it will also work on
 
 Known bugs:
 - Current font family is not loaded in style dialog font combo box
-- KDE: Odd handling of the tray icon context menu
-- KDE: Cannot override context menu style
-- Deepin: Status icon is not shown in the titlebar
- 
- # Troubleshooting
- - KeyError: remove preferences.json and/or profile.json from /db/ and restart the script
  
  Please report all issues on Github :)
