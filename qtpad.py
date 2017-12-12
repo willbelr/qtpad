@@ -489,15 +489,17 @@ class Mother(object):
                     elif preferences.query("fetchFile"):
                         pixmap = QtGui.QPixmap(path)
 
-            elif preferences.query("fetchUrl") and (path.startswith("http://") or path.startswith("https://")):
-                allowed = ['jpeg', 'gif', 'png', 'bmp', 'svg+xml']
-                try:
-                    mimetype = requests.get(path).headers["content-type"].split('/')[1]
-                    if mimetype in allowed:
-                        fetch = requests.get(path)
-                        pixmap.loadFromData(fetch.content)
-                except:
-                    log.warning("Could not fetch from URL:" + str(sys.exc_info()[0]) + ", " +  str(sys.exc_info()[1]))
+            elif preferences.query("fetchUrl") and (path.startswith("http://") or path.startswith("https://") or path.startswith("www.")):
+                #Do not try to get header if the link point to a pdf
+                if path.lower().find(".pdf") == -1:
+                    allowed = ['jpeg', 'gif', 'png', 'bmp', 'svg+xml']
+                    try:
+                        mimetype = requests.get(path).headers["content-type"].split('/')[1]
+                        if mimetype in allowed:
+                            fetch = requests.get(path)
+                            pixmap.loadFromData(fetch.content)
+                    except:
+                        logger.warning(str(sys.exc_info()[1]))
 
         if textContent or not pixmap.isNull():
             if newNote:
