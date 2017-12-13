@@ -10,7 +10,7 @@
 - Auto save when loosing focus, and auto load when gaining focus
 - Indication of unsaved changes by an asterisk* at the end of the note title 
 - All notes are locally stored in plain text, identified by their name
-- Many options available, which can all be set using the tray icon menu
+- Many options available, which can all be set using the preferences gui
 
 # Screenshots
 Text and image notes context menus
