@@ -12,12 +12,29 @@
 - All notes are locally stored in plain text, identified by their name
 - Many options available, which can all be set using the tray icon menu
 
-# Screenshots (not up-to-date)
+# Screenshots
+Text and image notes context menus
+
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/child.png)
+
+
+Tray icon context menu
+
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/context_menu.png)
 
+
+Customizable style presets
+
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/quickstyle.png)
-![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/preferences.png)    
+
+
+Preferences GUI
+
+![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/preferences.png)
+
+
+Profile GUI
+
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/style.png)
 
 # Hotkeys
