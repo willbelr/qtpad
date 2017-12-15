@@ -67,3 +67,7 @@ Known bugs:
 - Current font family is not loaded in style dialog font combo box
  
  Please report all issues on Github :)
+ 
+ # Future improvements
+ - Command line interface using dbus and QtDBus
+ - Search and replace functionnality
