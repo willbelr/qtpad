@@ -25,6 +25,7 @@ Tray icon context menu
 
 Customizable style presets
 
+![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/stylepreset.gif)
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/quickstyle.png)
 
 
@@ -38,6 +39,9 @@ Profile GUI
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/style.png)
 
 # Hotkeys
+
+![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/hotkeys.gif)
+
 - Ctrl+H: Hide
 - Ctrl+P: Pin
 - Ctrl+R: Rename
