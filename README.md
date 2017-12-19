@@ -25,9 +25,8 @@ Tray icon context menu
 
 Customizable style presets
 
-![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/stylepreset.gif)
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/quickstyle.png)
-
+![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/stylepreset.gif)
 
 Preferences GUI
 
@@ -39,8 +38,6 @@ Profile GUI
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/style.png)
 
 # Hotkeys
-
-![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/hotkeys.gif)
 
 - Ctrl+H: Hide
 - Ctrl+P: Pin
@@ -55,6 +52,8 @@ Profile GUI
 - Ctrl+Shift+Down: Shift current line down
 - Ctrl+Shift+Plus: Increase font or image size
 - Ctrl+Shift+Minus: Decrease font or image size
+
+![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/hotkeys.gif)
 
 # Installation
 Require Python 3, Qt5 and Qt5-SVG module. Installation will vary according to your kernel:
