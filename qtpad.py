@@ -4,10 +4,10 @@ import sys
 import time
 import json
 import logging
-import traceback
 import requests
 from PyQt5 import QtGui, QtWidgets, QtCore, uic
 from PyQt5.QtCore import Qt, QThread, QObject, pyqtSignal, pyqtSlot
+
 
 class Preferences(object):
     def __init__(self):
@@ -48,7 +48,7 @@ class Preferences(object):
                 self.q[category] = self.db[category]
 
     def query(self, entry):
-        if not entry in self.q:
+        if entry not in self.q:
             db = {}
             for category in PREFERENCES_DEFAULT:
                 for key in PREFERENCES_DEFAULT[category]:
@@ -57,7 +57,8 @@ class Preferences(object):
             self.q[entry] = db[entry]
             logger.error("Key '" + entry + "' is missing in preferences database, using default value (" + str(db[entry]) + ")")
         return self.q[entry]
-#
+
+
 class PreferencesDialog(QtWidgets.QDialog):
     def __init__(self, parent):
         super().__init__()
@@ -66,7 +67,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
         self.setFixedSize(530, 250)
 
-        actions = ['Toggle actives','New note','Fetch clipboard or new note','Show all','Hide all','Reverse all','Reset positions','Fetch clipboard','None']
+        actions = ['Toggle actives', 'New note', 'Fetch clipboard or new note', 'Show all', 'Hide all', 'Reverse all', 'Reset positions', 'Fetch clipboard', 'None']
         self.ui.leftClickCombo.addItems(actions)
         self.ui.middleClickCombo.addItems(actions)
         self.ui.startupCombo.addItems(actions)
@@ -117,7 +118,7 @@ class PreferencesDialog(QtWidgets.QDialog):
             if alwaysOnTopChanged or frameChanged:
                 for name in self.parent.children:
                     isVisible = self.parent.children[name].isVisible()
-                    self.parent.children[name].refreshWindowState(updateFrame = frameChanged)
+                    self.parent.children[name].refreshWindowState(updateFrame=frameChanged)
                     time.sleep(0.1)
                     if isVisible:
                         self.parent.children[name].display()
@@ -125,7 +126,8 @@ class PreferencesDialog(QtWidgets.QDialog):
 
     def menuEvent(self):
         self.ui.stackedWidget.setCurrentIndex(self.ui.listWidget.currentRow())
-#
+
+
 class Profile(object):
     def __init__(self, path, mother):
         self.path = path
@@ -134,7 +136,7 @@ class Profile(object):
             self.load()
         else:
             self.db = {}
-        if not self.name in self.db:
+        if self.name not in self.db:
             self.db[self.name] = preferences.db["styleDefault"]
 
             x = QtWidgets.QDesktopWidget().screenGeometry().width() - preferences.query("width")
@@ -157,7 +159,7 @@ class Profile(object):
         if self.name in self.db:
             self.db[self.name][entry] = value
 
-    def save(self, entry = None, value = None):
+    def save(self, entry=None, value=None):
         if entry and value is not None:
             self.load()
             self.set(entry, value)
@@ -174,11 +176,12 @@ class Profile(object):
                 self.q[entry] = self.db[self.name][entry]
 
     def query(self, entry):
-        if not entry in self.q:
+        if entry not in self.q:
             self.q[entry] = PREFERENCES_DEFAULT["styleDefault"][entry]
             logger.error("Key '" + entry + "' is missing in profiles database, using default value (" + str(self.q[entry]) + ")")
         return self.q[entry]
-#
+
+
 class ProfileDialog(QtWidgets.QDialog):
     def __init__(self, parent):
         super().__init__()
@@ -307,13 +310,14 @@ class ProfileDialog(QtWidgets.QDialog):
         font = self.parent.ui.textEdit.font()
         font.setFamily(self.fontFamily)
         self.parent.ui.textEdit.setFont(font)
-#
+
+
 class Mother(object):
     def __init__(self, parent=None):
         self.children = {}
         self.load()
         icons = ["tray", "quit", "file_active", "file_inactive", "new", "hide", "show", "reverse",
-                    "preferences", "image", "toggle", "reset", "file_pinned", "file_image"]
+                  "preferences", "image", "toggle", "reset", "file_pinned", "file_image"]
         self.icon = {}
         for icon in icons:
             self.icon[icon] = QtGui.QIcon(ICONS_DIR + icon + ".svg")
@@ -323,7 +327,7 @@ class Mother(object):
         self.trayIcon = QtWidgets.QSystemTrayIcon()
         self.trayIcon.activated.connect(self.clickEvent)
 
-        #Handle svg to pixmap conversion (KDE compatibility)
+        # Handle svg to pixmap conversion (KDE compatibility)
         trayIcon = self.icon["tray"].pixmap(64, 64)
         trayIcon = QtGui.QIcon(trayIcon)
         self.trayIcon.setIcon(trayIcon)
@@ -338,7 +342,7 @@ class Mother(object):
     def load(self):
         for f in os.listdir(DB_DIR):
             name = f.rsplit('.', 1)[0]
-            if not name in self.children:
+            if name not in self.children:
                 if f.endswith(".txt"):
                     if os.stat(DB_DIR + f).st_size == 0 and preferences.query("deleteEmptyNotes"):
                         logger.warning("Removed '" + name + "' (empty)")
@@ -346,10 +350,10 @@ class Mother(object):
                     else:
                         self.children[name] = Child(self, DB_DIR + f)
                 elif f.endswith(".png"):
-                    self.children[name] = Child(self, DB_DIR + f, image = QtGui.QPixmap(f))
+                    self.children[name] = Child(self, DB_DIR + f, image=QtGui.QPixmap(f))
         self.cleanProfiles()
 
-    def new(self, image = None, text = None):
+    def new(self, image=None, text=None):
         if image:
             prefix = preferences.query("defaultNameImg")
         else:
@@ -361,14 +365,13 @@ class Mother(object):
             name = prefix + " " + str(n)
 
         if image:
-            self.children[name] = Child(self, DB_DIR + name + ".png", isNew = True, image = image)
+            self.children[name] = Child(self, DB_DIR + name + ".png", isNew=True, image=image)
         else:
-            self.children[name] = Child(self, DB_DIR + name + ".txt", isNew = True, text = text)
-            #self.children[name].save()
+            self.children[name] = Child(self, DB_DIR + name + ".txt", isNew=True, text=text)
         return name
 
     def refreshMenu(self):
-        #Monitor changes in the database directory, clear old menu
+        # Monitor changes in the database directory, clear old menu
         self.load()
         self.cleanOrphans()
         self.menu.clear()
@@ -384,7 +387,7 @@ class Mother(object):
         self.menu.addAction(self.icon["reset"], 'Reset positions', lambda: self.action("Reset positions"))
         self.menu.addSeparator()
 
-        #List of children windows
+        # List of children windows
         for name in self.children:
             if self.children[name].profile.query("pin"):
                 icon = self.icon["file_pinned"]
@@ -405,10 +408,10 @@ class Mother(object):
             self.new()
 
         elif action == "Fetch clipboard":
-            fetch = self.fetchClipboard(newNote = True)
+            fetch = self.fetchClipboard(newNote=True)
 
         elif action == "Fetch clipboard or new note":
-            fetch = self.fetchClipboard(newNote = True)
+            fetch = self.fetchClipboard(newNote=True)
             if not fetch:
                 self.new()
 
@@ -450,11 +453,11 @@ class Mother(object):
                     children.display()
 
         elif action == "Reset positions":
-            #Remove orhans and unassigned profiles
+            # Remove orhans and unassigned profiles
             self.cleanOrphans()
             self.cleanProfiles()
 
-            #Reset position
+            # Reset position
             n = 0
             _x = QtWidgets.QDesktopWidget().screenGeometry().width() - preferences.query("width")
             _y = preferences.query("height") / 2
@@ -474,7 +477,7 @@ class Mother(object):
                 children.profile.set("height", height)
                 children.profile.save()
 
-    def fetchClipboard(self, newNote = False):
+    def fetchClipboard(self, newNote=False):
         pixmap = clipboard.pixmap()
         path = clipboard.text().rstrip()
         textContent = None
@@ -490,7 +493,7 @@ class Mother(object):
                         pixmap = QtGui.QPixmap(path)
 
             elif preferences.query("fetchUrl") and (path.startswith("http://") or path.startswith("https://") or path.startswith("www.")):
-                #Do not try to get header if the link point to a pdf
+                # Do not try to get header if the link point to a pdf
                 if path.lower().find(".pdf") == -1:
                     allowed = ['jpeg', 'gif', 'png', 'bmp', 'svg+xml']
                     try:
@@ -504,10 +507,10 @@ class Mother(object):
         if textContent or not pixmap.isNull():
             if newNote:
                 if textContent:
-                    self.children[self.new(text = textContent)]
+                    self.children[self.new(text=textContent)]
                     logger.info("Fetched text from " + path)
                 else:
-                    self.children[self.new(image = pixmap)]
+                    self.children[self.new(image=pixmap)]
                     logger.info("Fetched image from " + (path if path else "clipboard"))
 
                 if preferences.query("fetchClear"):
@@ -540,12 +543,13 @@ class Mother(object):
             self.action(preferences.query("leftClickAction"))
         elif event == 4:
             self.action(preferences.query("middleClickAction"))
-#
+
+
 class Child(QtWidgets.QWidget):
-    def __init__(self, parent, path, isNew = False, image = None, text = None):
+    def __init__(self, parent, path, isNew=False, image=None, text=None):
         super().__init__()
 
-        #Load common settings
+        # Load common settings
         self.ui = uic.loadUi(LOCAL_DIR + 'gui_child.ui', self)
         self.profile = Profile(path, parent)
         self.parent = parent
@@ -566,7 +570,7 @@ class Child(QtWidgets.QWidget):
         self.bottomLayout.addWidget(self.sizeGrip)
         self.bottomLayout.setAlignment(self.sizeGrip, Qt.AlignRight)
 
-        #Loading context menu
+        # Loading context menu
         icons = ["hide", "delete", "rename", "tray", "pin_menu", "pin_title", "toggle", "style", "image", "file_inactive", "preferences", "new"]
         self.icon = {}
         for icon in icons:
@@ -579,7 +583,7 @@ class Child(QtWidgets.QWidget):
         self.submenu.addAction(self.icon["preferences"], "Customize", lambda: ProfileDialog(self))
         self.submenu.addSeparator()
 
-        #Load style presets and replace transparency with background color, foreground with 'fontColor'
+        # Load style presets and replace transparency with background color, foreground with 'fontColor'
         for entry in preferences.db["stylePreset"]:
             background = preferences.db["stylePreset"][entry]["background"]
             fontColor = preferences.db["stylePreset"][entry]["fontColor"]
@@ -591,11 +595,11 @@ class Child(QtWidgets.QWidget):
             painter.fillRect(pixmap.rect(), QtGui.QColor(fontColor))
             painter.end()
             icon = QtGui.QIcon(pixmap)
-            self.submenu.addAction(icon, entry, lambda background=background, fontColor=fontColor: self.setStyle(background, fontColor, updateProfile = True))
+            self.submenu.addAction(icon, entry, lambda background=background, fontColor=fontColor: self.setStyle(background, fontColor, updateProfile=True))
         self.menu.addMenu(self.submenu)
         self.menu.addAction(self.icon["pin_menu"], 'Pin', self.pin)
 
-        #Customize context menu according to note type (image or text)
+        # Customize context menu according to note type (image or text)
         if image:
             self.isImage = True
             self.ui.textEdit.hide()
@@ -645,13 +649,13 @@ class Child(QtWidgets.QWidget):
         self.menu.addSeparator()
         self.menu.addAction(self.icon["delete"], 'Delete', self.delete)
 
-        #Apply settings and display children
-        self.refreshWindowState(updateFrame = True)
+        # Apply settings and display children
+        self.refreshWindowState(updateFrame=True)
         self.resize(self.profile.query("width"), self.profile.query("height"))
         if isNew or self.profile.query("pin") or not preferences.query("minimize"):
-            self.display(updateState = False)
+            self.display(updateState=False)
 
-    def display(self, updateState = True, updatePosition = True):
+    def display(self, updateState=True, updatePosition=True):
         if updateState:
             self.refreshWindowState()
         if updatePosition:
@@ -700,34 +704,34 @@ class Child(QtWidgets.QWidget):
                 self.remove()
 
     def remove(self):
-        #Remove from profile list
+        # Remove from profile list
         if self.name in self.profile.db:
             del self.profile.db[self.name]
             self.profile.save()
 
-        #Remove from active list
+        # Remove from active list
         if self.name in preferences.db["actives"]:
             preferences.db["actives"].remove(self.name)
             preferences.set("actives", preferences.db["actives"])
 
-        #Remove from loaded list
+        # Remove from loaded list
         if self.name in self.parent.children:
             del self.parent.children[self.name]
 
-        #Remove from database
+        # Remove from database
         if os.path.isfile(self.path):
             os.remove(self.path)
 
-        #Close widget
+        # Close widget
         self.name = ""
         self.close()
 
     def pin(self):
         self.profile.save("pin", not self.profile.query("pin"))
-        self.display(updatePosition = False)
+        self.display(updatePosition=False)
 
     def renameEvent(self, event=None):
-        if event == None:
+        if event is None:
             self.ui.renameLabel.show()
             self.ui.line.show()
             self.ui.renameText.setText(self.name)
@@ -742,18 +746,18 @@ class Child(QtWidgets.QWidget):
 
         elif event.type() == QtCore.QEvent.KeyPress:
             if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return:
-                #Remove illegal characters
+                # Remove illegal characters
                 name = self.ui.renameText.text()
                 name = "".join(x for x in name if x.isalnum() or x is " ")
-                if name and not name == self.name and not name in self.parent.children:
+                if name and not name == self.name and name not in self.parent.children:
                     self.rename(name)
-                #Trigger focusOutEvent
+                # Trigger focusOutEvent
                 self.ui.renameText.hide()
             else:
                 QtWidgets.QLineEdit.keyPressEvent(self.ui.renameText, event)
 
     def rename(self, name):
-        #Replace name in profiles database
+        # Replace name in profiles database
         with open(PROFILES_FILE, "r+") as db:
             profiles = json.load(db)
             profiles[name] = profiles.pop(self.name)
@@ -761,10 +765,10 @@ class Child(QtWidgets.QWidget):
             db.truncate()
             db.write(json.dumps(profiles, indent=2, sort_keys=False))
 
-        #Replace name in children list
+        # Replace name in children list
         self.parent.children[name] = self.parent.children.pop(self.name)
 
-        #Rename note file
+        # Rename note file
         if os.path.isfile(self.path):
             if self.isImage:
                 os.rename(self.path, DB_DIR + name + ".png")
@@ -773,21 +777,21 @@ class Child(QtWidgets.QWidget):
                 os.rename(self.path, DB_DIR + name + ".txt")
                 self.path = DB_DIR + name + ".txt"
 
-        #Update child proprieties
+        # Update child proprieties
         self.name = self.path.rsplit('/', 1)[-1].rsplit('.', 1)[0]
         self.profile.path = self.path
         self.profile.name = self.name
         self.setWindowTitle(name)
 
-        #Update profile database
+        # Update profile database
         self.profile.load()
         self.profile.parse()
 
     def setBackgroundColor(self, color):
         palette = self.ui.textEdit.viewport().palette()
-        palette.setColor(QtGui.QPalette.Base, color) #textEdit
-        palette.setColor(QtGui.QPalette.Background, color) #widget
-        palette.setColor(QtGui.QPalette.Light, color) #line
+        palette.setColor(QtGui.QPalette.Base, color)  # textEdit
+        palette.setColor(QtGui.QPalette.Background, color)  # widget
+        palette.setColor(QtGui.QPalette.Light, color)  # line
         self.ui.textEdit.viewport().setPalette(palette)
         self.ui.textEdit.viewport().update()
         self.ui.setPalette(palette)
@@ -795,9 +799,9 @@ class Child(QtWidgets.QWidget):
 
     def setFontColor(self, color):
         palette = self.ui.textEdit.viewport().palette()
-        palette.setColor(QtGui.QPalette.Text, color) #textEdit
-        palette.setColor(QtGui.QPalette.WindowText, color) #label
-        palette.setColor(QtGui.QPalette.Dark, color) #line
+        palette.setColor(QtGui.QPalette.Text, color)  # textEdit
+        palette.setColor(QtGui.QPalette.WindowText, color)  # label
+        palette.setColor(QtGui.QPalette.Dark, color)  # line
         self.ui.textEdit.viewport().setPalette(palette)
         self.ui.renameLabel.setPalette(palette)
         self.ui.line.setPalette(palette)
@@ -815,11 +819,11 @@ class Child(QtWidgets.QWidget):
         font.setFamily(self.profile.query("fontFamily"))
         font.setPointSize(self.profile.query("fontSize"))
         self.ui.textEdit.setFont(font)
-        self.setStyle(self.profile.query("background"), self.profile.query("fontColor"), updateProfile = False)
+        self.setStyle(self.profile.query("background"), self.profile.query("fontColor"), updateProfile=False)
         logger.info("Loaded style for '" + self.name + "'")
 
-    def refreshWindowState(self, updateFrame = False):
-        #Handle window icon
+    def refreshWindowState(self, updateFrame=False):
+        # Handle window icon
         if self.profile.query("pin"):
             icon = self.icon["pin_title"]
         elif self.name in preferences.query("actives"):
@@ -829,7 +833,7 @@ class Child(QtWidgets.QWidget):
         self.ui.iconLabel.setPixmap(icon.pixmap(14, 14))
         self.setWindowIcon(icon)
 
-        #Choose between native and custom frame
+        # Choose between native and custom frame
         if updateFrame:
             self.ui.titleLabel.setText(self.name)
             self.setWindowTitle(self.name)
@@ -850,17 +854,17 @@ class Child(QtWidgets.QWidget):
                 self.ui.titleLabel.hide()
                 self.ui.closeButton.hide()
 
-        #Handle resize corner
+        # Handle resize corner
         if self.profile.query("sizeGrip") or preferences.query("frameless"):
             self.sizeGrip.show()
         else:
             self.sizeGrip.hide()
 
-        #Handle 'always on top'
+        # Handle 'always on top'
         if self.profile.query("pin") or preferences.query("alwaysOnTop"):
             self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
         else:
-            self.setWindowFlags(self.windowFlags() &~ Qt.WindowStaysOnTopHint)
+            self.setWindowFlags(self.windowFlags() & ~ Qt.WindowStaysOnTopHint)
         logger.info("Updated window state for '" + self.name + "'")
 
     def closeEvent(self, event):
@@ -869,7 +873,7 @@ class Child(QtWidgets.QWidget):
             logger.info("Closed '" + self.name + "'")
             event.ignore()
 
-            #Remove empty notes
+            # Remove empty notes
             if not self.isImage:
                 if preferences.query("deleteEmptyNotes") and self.ui.textEdit.toPlainText() == "":
                     logger.warning("Removed '" + self.name + "' (empty)")
@@ -890,7 +894,7 @@ class Child(QtWidgets.QWidget):
             self.save()
 
     def handleAsterisk(self):
-        #Indicate unsaved changes with title*
+        # Indicate unsaved changes with title*
         if self.ui.textEdit.isVisible():
             content = ""
             if os.path.isfile(self.path):
@@ -927,13 +931,13 @@ class Child(QtWidgets.QWidget):
         clipboard.setPixmap(self.ui.imageLabel.pixmap())
 
     def titleLabelMousePressEvent(self, event):
-        #Mouse dragging for frameless windows
+        # Mouse dragging for frameless windows
         if event.button() == QtCore.Qt.LeftButton:
             self.dragPosition = event.globalPos() - self.frameGeometry().topLeft()
             event.accept()
 
     def titleLabelMouseMoveEvent(self, event):
-        #Mouse dragging for frameless windows
+        # Mouse dragging for frameless windows
         if event.buttons() == QtCore.Qt.LeftButton:
             self.move(event.globalPos() - self.dragPosition)
             event.accept()
@@ -944,7 +948,7 @@ class Child(QtWidgets.QWidget):
             isCtrl = (event.modifiers() == Qt.ControlModifier)
             key = event.key()
 
-            #Actions hotkeys
+            # Actions hotkeys
             if key == Qt.Key_H and isCtrl:
                 self.hide()
             elif key == Qt.Key_P and isCtrl:
@@ -954,7 +958,7 @@ class Child(QtWidgets.QWidget):
             elif key == Qt.Key_S and isCtrl:
                 self.save()
 
-            #Special actions hotkeys
+            # Special actions hotkeys
             elif key == Qt.Key_R and isCtrlShift:
                 if self.sizeGrip.isVisible():
                     self.sizeGrip.hide()
@@ -983,11 +987,11 @@ class Child(QtWidgets.QWidget):
                 cursor.movePosition(QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor)
                 line = cursor.selectedText()
 
-                #Duplicate line
+                # Duplicate line
                 if key == Qt.Key_D:
                     cursor.insertText(line + "\n" + line)
 
-                #Shift line up
+                # Shift line up
                 elif key == Qt.Key_Up:
                     cursor.removeSelectedText()
                     cursor.movePosition(QtGui.QTextCursor.Left, QtGui.QTextCursor.KeepAnchor)
@@ -998,7 +1002,7 @@ class Child(QtWidgets.QWidget):
                     cursor.movePosition(QtGui.QTextCursor.Up)
                     cursor.movePosition(QtGui.QTextCursor.StartOfLine)
 
-                #Shift line down
+                # Shift line down
                 elif key == Qt.Key_Down:
                     cursor.removeSelectedText()
                     cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor)
@@ -1011,7 +1015,7 @@ class Child(QtWidgets.QWidget):
                 self.ui.textEdit.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
                 self.handleAsterisk()
 
-            #Resize hotkeys
+            # Resize hotkeys
             elif key == Qt.Key_Plus and isCtrlShift:
                 if self.isImage:
                     width, height = self.width() + 20, self.height() + 20
@@ -1025,12 +1029,12 @@ class Child(QtWidgets.QWidget):
                     font = self.ui.textEdit.font()
                     size = font.pointSize() - 1
 
-            #No valid hotkeys
+            # No valid hotkeys
             else:
                 QtWidgets.QPlainTextEdit.keyPressEvent(self.ui.textEdit, event)
                 self.handleAsterisk()
 
-            #Apply settings, if any
+            # Apply settings, if any
             if 'size' in locals() and size > 0:
                 font.setPointSize(size)
                 self.ui.textEdit.setFont(font)
@@ -1040,11 +1044,12 @@ class Child(QtWidgets.QWidget):
             if 'height' in locals() and height > 50:
                 self.resize(self.width(), height)
 
-        #No hotkeys
+        # No hotkeys
         else:
             QtWidgets.QPlainTextEdit.keyPressEvent(self.ui.textEdit, event)
             self.handleAsterisk()
-#
+
+
 LOG_LEVEL = logging.INFO
 LOG_FORMAT_DATE = "%H:%M:%S"
 LOG_FORMAT = "%(levelname)s\t[%(asctime)s] %(message)s"
@@ -1086,12 +1091,12 @@ PREFERENCES_DEFAULT = \
 
     'stylePreset':
     {
-        'Black on yellow': { 'background': '#ffff7f', 'fontColor': '#000000' },
-        'Black on white': { 'background': '#ffffff', 'fontColor': '#000000' },
-        'White on black': { 'background': '#2a2a2a', 'fontColor': '#ffffff' },
-        'Low priority': { 'background': '#c6efce', 'fontColor': '#004000' },
-        'Mid priority': { 'background': '#ffeb9c', 'fontColor': '#553400' },
-        'High priority': { 'background': '#ffc7ce', 'fontColor': '#9c0006' },
+        'Black on yellow': {'background': '#ffff7f', 'fontColor': '#000000'},
+        'Black on white': {'background': '#ffffff', 'fontColor': '#000000'},
+        'White on black': {'background': '#2a2a2a', 'fontColor': '#ffffff'},
+        'Low priority': {'background': '#c6efce', 'fontColor': '#004000'},
+        'Mid priority': {'background': '#ffeb9c', 'fontColor': '#553400'},
+        'High priority': {'background': '#ffc7ce', 'fontColor': '#9c0006'},
     },
     'actives': '',
 }
@@ -1130,8 +1135,8 @@ STYLESHEET_DEFAULT = \
     }
 }
 
-if __name__== '__main__':
-    logging.basicConfig(level = LOG_LEVEL, format = LOG_FORMAT, datefmt = LOG_FORMAT_DATE)
+if __name__ == '__main__':
+    logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT, datefmt=LOG_FORMAT_DATE)
     logger = logging.getLogger()
 
     LOCAL_DIR = os.path.dirname(os.path.realpath(__file__)) + '/'
@@ -1145,7 +1150,7 @@ if __name__== '__main__':
     PROFILES_FILE = CONFIG_DIR + "profiles.json"
     STYLESHEET_FILE = CONFIG_DIR + "custom_frame.css"
     if not os.path.isfile(STYLESHEET_FILE) or os.stat(STYLESHEET_FILE).st_size == 0:
-        #Format python dict to CSS syntax
+        # Format python dict to CSS syntax
         stylesheet = ""
         for item in STYLESHEET_DEFAULT:
             stylesheet += item + "\n{\n"
