@@ -55,9 +55,12 @@ Profile GUI
 
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/hotkeys.gif)
 
-# Installation
-Require Python 3, Qt5 and Qt5-SVG module. Installation will vary according to your kernel:
-- Arch: 'sudo pacman -Syu python-pyqt5 qt5-svg'
+# Arch install
+- Download the PKGBUILD and place it inside a new directory
+- Open a terminal and type 'makepkg', then 'sudo pacman -U qtpad*'
+
+# Installation of dependancies:
+Require Python 3, Qt5 and Qt5-SVG module. The installation method will vary according to your kernel.
 - Debian: 'sudo apt-get install python3-pyqt5 libqt5svg5'
 - Windows: Open the command prompt with administrator privileges and type 'python -m pip install pyqt5'
 
