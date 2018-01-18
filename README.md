@@ -59,13 +59,13 @@ Profile GUI
 - Download the PKGBUILD and place it inside a new directory
 - Open a terminal and type 'makepkg', then 'sudo pacman -U qtpad*'
 
-# Installation of dependancies:
-Require Python 3, Qt5 and Qt5-SVG module. The installation method will vary according to your kernel.
-- Debian: 'sudo apt-get install python3-pyqt5 libqt5svg5'
-- Windows: Open the command prompt with administrator privileges and type 'python -m pip install pyqt5'
+# Manual install (non-Arch)
+You must first install Python 3, Qt5, Qt5-svg, and requests module. The installation method will vary according to your kernel.
+- Debian: 'sudo apt-get install python3-pyqt5 libqt5svg5 python3-requests'
+- Windows: Open the command prompt with administrator privileges and type 'python -m pip install pyqt5 requests'
 
 # Compatibility
-qtPad is developed on Openbox. Altough not tested as often, it will also work on other platforms:
+qtPad is developed on Openbox. Altough not tested as often, it should also work on other platforms:
 - Linux: Openbox, MATE, Cinnamon, XFCE, Deepin, KDE Plasma 5 
 - Microsoft: Windows 7
 
