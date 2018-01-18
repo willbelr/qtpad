@@ -1,12 +1,38 @@
 #!/usr/bin/python3
-import os
-import sys
-import time
+import argparse
+import ast
 import json
 import logging
+import os
 import requests
-from PyQt5 import QtGui, QtWidgets, QtCore, uic
-from PyQt5.QtCore import Qt, QThread, QObject, pyqtSignal, pyqtSlot
+import sys
+import time
+from PyQt5 import QtGui, QtWidgets, QtCore, QtDBus, uic
+from PyQt5.QtCore import Qt, QThread, QObject, QProcess, pyqtSignal, pyqtSlot
+
+
+class QDBusServer(QObject):
+    def __init__(self):
+        QObject.__init__(self)
+        self.__dbusAdaptor = QDBusServerAdapter(self)
+
+
+class QDBusServerAdapter(QtDBus.QDBusAbstractAdaptor):
+    QtCore.Q_CLASSINFO("D-Bus Interface", "com.qtpad.dbus")
+    QtCore.Q_CLASSINFO("D-Bus Introspection",
+    '  <interface name="com.qtpad.dbus">\n'
+    '    <method name="parse">\n'
+    '      <arg direction="in" type="s" name="cmd"/>\n'
+    '    </method>\n'
+    '  </interface>\n')
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+    @pyqtSlot(str, result=str)
+    def parse(self, cmd):
+        cmd = ast.literal_eval(cmd)  # String to dict
+        daemon.parse(cmd)
 
 
 class Preferences(object):
@@ -67,13 +93,16 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
         self.setFixedSize(530, 250)
 
-        actions = ['Toggle actives', 'New note', 'Fetch clipboard or new note', 'Show all', 'Hide all', 'Reverse all', 'Reset positions', 'Fetch clipboard', 'None']
+        actions = ['Toggle actives', 'New note', 'Fetch clipboard or new note', 'Show all', 'Hide all', 'Reverse all', 'Reset positions', 'Fetch clipboard', 'Exec', 'None']
         self.ui.leftClickCombo.addItems(actions)
         self.ui.middleClickCombo.addItems(actions)
         self.ui.startupCombo.addItems(actions)
         self.ui.leftClickCombo.setCurrentText(preferences.query("leftClickAction"))
+        self.ui.cmdLeftText.setText(preferences.query("cmdLeft"))
         self.ui.middleClickCombo.setCurrentText(preferences.query("middleClickAction"))
+        self.ui.cmdMiddleText.setText(preferences.query("cmdMiddle"))
         self.ui.startupCombo.setCurrentText(preferences.query("startupAction"))
+        self.ui.cmdStartupText.setText(preferences.query("cmdStartup"))
         self.ui.defaultNameTxtText.setText(preferences.query("defaultNameTxt"))
         self.ui.defaultNameImgText.setText(preferences.query("defaultNameImg"))
         self.ui.alwaysOnTopBox.setChecked(preferences.query("alwaysOnTop"))
@@ -87,10 +116,43 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.ui.fetchFileBox.setChecked(preferences.query("fetchFile"))
         self.ui.fetchTxtBox.setChecked(preferences.query("fetchTxt"))
         self.ui.fetchIconBox.setChecked(preferences.query("fetchIcon"))
+        self.ui.leftClickCombo.currentTextChanged.connect(self.toggleCmdWidgets)
+        self.ui.middleClickCombo.currentTextChanged.connect(self.toggleCmdWidgets)
+        self.ui.startupCombo.currentTextChanged.connect(self.toggleCmdWidgets)
         self.ui.listWidget.selectionModel().selectionChanged.connect(self.menuEvent)
         self.ui.listWidget.setFocus()
+        self.toggleCmdWidgets()
         self.done = self.exec_()
         self.close()
+
+    def toggleCmdWidgets(self):
+        if self.ui.leftClickCombo.currentText() == "Exec":
+            self.ui.cmdLeftLabel.show()
+            self.ui.cmdLeftText.show()
+            self.ui.cmdLeftLine.show()
+        else:
+            self.ui.cmdLeftLabel.hide()
+            self.ui.cmdLeftText.hide()
+            self.ui.cmdLeftLine.hide()
+
+        if self.ui.middleClickCombo.currentText() == "Exec":
+            self.ui.cmdMiddleLabel.show()
+            self.ui.cmdMiddleText.show()
+            self.ui.cmdMiddleLine.show()
+        else:
+            self.ui.cmdMiddleLabel.hide()
+            self.ui.cmdMiddleText.hide()
+            self.ui.cmdMiddleLine.hide()
+
+        if self.ui.startupCombo.currentText() == "Exec":
+            self.ui.cmdStartupLabel.show()
+            self.ui.cmdStartupText.show()
+        else:
+            self.ui.cmdStartupLabel.hide()
+            self.ui.cmdStartupText.hide()
+
+    def menuEvent(self):
+        self.ui.stackedWidget.setCurrentIndex(self.ui.listWidget.currentRow())
 
     def closeEvent(self, event):
         if self.done:
@@ -98,8 +160,11 @@ class PreferencesDialog(QtWidgets.QDialog):
             frameChanged = not self.ui.framelessBox.isChecked() == preferences.query("frameless")
             preferences.load()
             preferences.set("general", "leftClickAction", self.ui.leftClickCombo.currentText())
+            preferences.set("general", "cmdLeft", self.ui.cmdLeftText.text())
             preferences.set("general", "middleClickAction", self.ui.middleClickCombo.currentText())
+            preferences.set("general", "cmdMiddle", self.ui.cmdMiddleText.text())
             preferences.set("general", "startupAction", self.ui.startupCombo.currentText())
+            preferences.set("general", "cmdStartup", self.ui.cmdStartupText.text())
             preferences.set("general", "defaultNameTxt", self.ui.defaultNameTxtText.text())
             preferences.set("general", "defaultNameImg", self.ui.defaultNameImgText.text())
             preferences.set("general", "minimize", self.ui.minimizeBox.isChecked())
@@ -123,9 +188,6 @@ class PreferencesDialog(QtWidgets.QDialog):
                     if isVisible:
                         self.parent.children[name].display()
         event.accept()
-
-    def menuEvent(self):
-        self.ui.stackedWidget.setCurrentIndex(self.ui.listWidget.currentRow())
 
 
 class Profile(object):
@@ -337,7 +399,15 @@ class Mother(object):
         self.trayIcon.show()
 
         if preferences.query("startupAction"):
-            self.action(preferences.query("startupAction"))
+            action = preferences.query("startupAction")
+            cmd = preferences.query("cmdStartup")
+            self.action(action, cmd)
+
+    def parse(self, cmd):
+        for arg in cmd:
+            if arg == "action" and cmd[arg]:
+                logger.info("Call action '%s' from command", cmd[arg])
+                self.action(cmd[arg])
 
     def load(self):
         for f in os.listdir(DB_DIR):
@@ -403,7 +473,7 @@ class Mother(object):
         self.menu.addAction(self.icon["preferences"], "Preferences", lambda: PreferencesDialog(self))
         self.menu.addAction(self.icon["quit"], 'Quit', app.exit)
 
-    def action(self, action):
+    def action(self, action, cmd=None):
         if action == "New note":
             self.new()
 
@@ -477,6 +547,12 @@ class Mother(object):
                 children.profile.set("height", height)
                 children.profile.save()
 
+        elif action == "Exec":
+            if cmd:
+                logger.info("Starting '%s'", cmd)
+                slave = QProcess()
+                slave.startDetached(cmd)
+
     def fetchClipboard(self, newNote=False):
         pixmap = clipboard.pixmap()
         path = clipboard.text().rstrip()
@@ -502,7 +578,7 @@ class Mother(object):
                             fetch = requests.get(path)
                             pixmap.loadFromData(fetch.content)
                     except:
-                        logger.warning(str(sys.exc_info()[1]))
+                        logger.warning(str(sys.exc_info()[0]), str(sys.exc_info()[1]))
 
         if textContent or not pixmap.isNull():
             if newNote:
@@ -539,10 +615,17 @@ class Mother(object):
                 db.write(json.dumps(profiles, indent=2, sort_keys=False))
 
     def clickEvent(self, event):
+        # Left click
         if event == 3:
-            self.action(preferences.query("leftClickAction"))
+            action = preferences.query("leftClickAction")
+            cmd = preferences.query("cmdLeft")
+            self.action(action, cmd)
+
+        # Middle click
         elif event == 4:
-            self.action(preferences.query("middleClickAction"))
+            action = preferences.query("middleClickAction")
+            cmd = preferences.query("cmdMiddle")
+            self.action(action, cmd)
 
 
 class Child(QtWidgets.QWidget):
@@ -1061,8 +1144,11 @@ PREFERENCES_DEFAULT = \
         'defaultNameTxt': 'Untitled',
         'defaultNameImg': 'Image',
         'leftClickAction': 'Toggle actives',
+        'cmdLeft': '',
         'middleClickAction': 'Fetch clipboard or new note',
+        'cmdMiddle': '',
         'startupAction': 'None',
+        'cmdStartup': '',
         'minimize': True,
         'alwaysOnTop': True,
         'safeDelete': True,
@@ -1136,19 +1222,36 @@ STYLESHEET_DEFAULT = \
 }
 
 if __name__ == '__main__':
+    # Handle command line input
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-a", "--action", help="execute one of the predefined action, as shown in the preferences menu", metavar='')
+    args = parser.parse_args()
+    args = vars(args)  # Namespace to dict
+
+    # Verify if a bus already exist
+    bus = QtDBus.QDBusInterface("com.qtpad.dbus", "/cli", "com.qtpad.dbus", QtDBus.QDBusConnection.sessionBus())
+    if bus.isValid():
+        args = str(args)
+        bus.call("parse", args)
+        sys.exit(0)
+
+    # Init logger
     logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT, datefmt=LOG_FORMAT_DATE)
     logger = logging.getLogger()
+    logger.info("Init of a new instance")
 
+    # Set paths
     LOCAL_DIR = os.path.dirname(os.path.realpath(__file__)) + '/'
     ICONS_DIR = LOCAL_DIR + 'icons/'
     CONFIG_DIR = os.path.expanduser("~/.config/qtpad/")
+    PREFERENCES_FILE = CONFIG_DIR + "preferences.json"
+    PROFILES_FILE = CONFIG_DIR + "profiles.json"
+    STYLESHEET_FILE = CONFIG_DIR + "custom_frame.css"
     DB_DIR = CONFIG_DIR + "notes/"
     if not os.path.exists(DB_DIR):
         os.makedirs(DB_DIR)
 
-    PREFERENCES_FILE = CONFIG_DIR + "preferences.json"
-    PROFILES_FILE = CONFIG_DIR + "profiles.json"
-    STYLESHEET_FILE = CONFIG_DIR + "custom_frame.css"
+    # Set style
     if not os.path.isfile(STYLESHEET_FILE) or os.stat(STYLESHEET_FILE).st_size == 0:
         # Format python dict to CSS syntax
         stylesheet = ""
@@ -1160,9 +1263,15 @@ if __name__ == '__main__':
         with open(STYLESHEET_FILE, 'w') as f:
             f.write(stylesheet)
 
+    # Init a Qt application
     preferences = Preferences()
     app = QtWidgets.QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
     clipboard = app.clipboard()
+    bus = QtDBus.QDBusConnection.sessionBus()
+    server = QDBusServer()
+    bus.registerObject('/cli', server)
+    bus.registerService('com.qtpad.dbus')
     daemon = Mother()
+    daemon.parse(args)
     sys.exit(app.exec_())
