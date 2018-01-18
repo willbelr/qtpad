@@ -72,5 +72,5 @@ Known bugs:
  Please report all issues on Github :)
  
  # Future improvements
- - Command line interface using dbus and QtDBus
+ - Dark icon theme
  - Search and replace functionnality
