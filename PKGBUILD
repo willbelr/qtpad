@@ -52,20 +52,5 @@ Icon=view-compact-symbolic
 NoDisplay=true" > $pkgname.desktop
   install -Dm755 $pkgname.desktop "$pkgdir/usr/share/applications/$pkgname.desktop"
 
-  if [ -d "/usr/lib/systemd" ]; then
-    msg "Creation of a systemd service"
-    echo -e "[Unit]
-Description=qtpad
-After=multi-user.target
-
-[Service]
-Type=idle
-ExecStart=/usr/bin/python /usr/share/$pkgname/$pkgname.py
-
-[Install]
-WantedBy=multi-user.target" > $pkgname.service
-    install -Dm644 $pkgname.service "$pkgdir/usr/lib/systemd/system/$pkgname.service"
-  fi
   msg "Done. Thank you."
-  msg "Please enable '$pkgname' systemd service to launch application on startup"
 }
