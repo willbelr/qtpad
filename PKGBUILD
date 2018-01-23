@@ -9,7 +9,7 @@ arch=('any')
 license=('GPL3')
 source=('https://github.com/willbelr/qtpad/archive/master.zip')
 depends=('python>=3' 'python-pyqt5' 'qt5-svg' 'python-requests')
-md5sums=('3f0d2a64cef18883b2eac5d6835abbcb')
+md5sums=('dcabf47186ffaccd6b8d9a6f2a308c22')
 
 prepare()
 {
