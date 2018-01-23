@@ -1,4 +1,5 @@
 # Maintainer: William Belanger <echo d2lsbGlhbS5iZWxyQGdtYWlsLmNvbQ== | base64 -d>
+# PKGBUILD is broken, please use 'makepkg --skipchecksums' for now
 
 pkgname=qtpad
 pkgdesc="Modern and customizable sticky note application"
