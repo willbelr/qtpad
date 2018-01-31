@@ -1,12 +1,4 @@
 #!/usr/bin/python3
-"""
-DONE:
-
-TODO:
-    Search and replace
-    Icon themes
-    Fix image bug (respect small size when pasting, restore size after sizegrip or rename)
-"""
 import json
 import logging
 import os
@@ -15,11 +7,11 @@ import sys
 import time
 from PyQt5 import QtGui, QtWidgets, QtCore, QtDBus, uic
 from PyQt5.QtCore import Qt, QThread, QObject, QProcess, pyqtSignal, pyqtSlot
-
 try:
-    import gui_child
-    import gui_preferences
-    import gui_profile
+    # Load pre-compiled Ui files if available
+    import qtpad.gui_child
+    import qtpad.gui_preferences
+    import qtpad.gui_profile
 except ImportError:
     pass
 
@@ -99,8 +91,8 @@ class Preferences(object):
 class PreferencesDialog(QtWidgets.QDialog):
     def __init__(self, parent):
         super().__init__()
-        if "gui_preferences" in sys.modules:
-            self.ui = gui_preferences.Ui_Dialog()
+        if "qtpad.gui_preferences" in sys.modules:
+            self.ui = qtpad.gui_preferences.Ui_Dialog()
             self.ui.setupUi(self)
         else:
             self.ui = uic.loadUi(LOCAL_DIR + 'gui_preferences.ui', self)
@@ -262,8 +254,8 @@ class Profile(object):
 class ProfileDialog(QtWidgets.QDialog):
     def __init__(self, parent):
         super().__init__()
-        if "gui_profile" in sys.modules:
-            self.ui = gui_profile.Ui_Dialog()
+        if "qtpad.gui_profile" in sys.modules:
+            self.ui = qtpad.gui_profile.Ui_Dialog()
             self.ui.setupUi(self)
         else:
             self.ui = uic.loadUi(LOCAL_DIR + 'gui_profile.ui', self)
@@ -651,8 +643,8 @@ class Child(QtWidgets.QWidget):
         super().__init__()
 
         # Load common settings
-        if "gui_child" in sys.modules:
-            self.ui = gui_child.Ui_Form()
+        if "qtpad.gui_child" in sys.modules:
+            self.ui = qtpad.gui_child.Ui_Form()
             self.ui.setupUi(self)
         else:
             self.ui = uic.loadUi(LOCAL_DIR + 'gui_child.ui', self)
@@ -1257,10 +1249,10 @@ def main():
     logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT, datefmt=LOG_FORMAT_DATE)
     logger = logging.getLogger()
     logger.info("Init of a new instance")
-    if "gui_child" in sys.modules and "gui_profile" in sys.modules and "gui_preferences" in sys.modules:
+    if "qtpad.gui_child" in sys.modules and "qtpad.gui_profile" in sys.modules and "qtpad.gui_preferences" in sys.modules:
         logger.info("Found pre-compiled ui files")
     else:
-        logger.warning("Some or all pre-compiled ui files are missing")
+        logger.warning("Some or all compiled ui files are missing")
 
     # Set paths
     global LOCAL_DIR, ICONS_DIR, PREFERENCES_FILE, PROFILES_FILE, DB_DIR, STYLESHEET_FILE
