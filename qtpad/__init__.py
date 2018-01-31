@@ -1,4 +1,12 @@
 #!/usr/bin/python3
+"""
+DONE:
+
+TODO:
+    Search and replace
+    Icon themes
+    Fix image bug (respect small size when pasting, restore size after sizegrip or rename)
+"""
 import json
 import logging
 import os
@@ -8,6 +16,12 @@ import time
 from PyQt5 import QtGui, QtWidgets, QtCore, QtDBus, uic
 from PyQt5.QtCore import Qt, QThread, QObject, QProcess, pyqtSignal, pyqtSlot
 
+try:
+    import gui_child
+    import gui_preferences
+    import gui_profile
+except ImportError:
+    pass
 
 class QDBusServer(QObject):
     def __init__(self):
@@ -85,8 +99,12 @@ class Preferences(object):
 class PreferencesDialog(QtWidgets.QDialog):
     def __init__(self, parent):
         super().__init__()
+        if "gui_preferences" in sys.modules:
+            self.ui = gui_preferences.Ui_Dialog()
+            self.ui.setupUi(self)
+        else:
+            self.ui = uic.loadUi(LOCAL_DIR + 'gui_preferences.ui', self)
         self.parent = parent
-        self.ui = uic.loadUi(LOCAL_DIR + 'gui_preferences.ui', self)
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
         self.setFixedSize(530, 250)
 
@@ -244,11 +262,15 @@ class Profile(object):
 class ProfileDialog(QtWidgets.QDialog):
     def __init__(self, parent):
         super().__init__()
-        self.ui = uic.loadUi(LOCAL_DIR + 'gui_profile.ui', self)
+        if "gui_profile" in sys.modules:
+            self.ui = gui_profile.Ui_Dialog()
+            self.ui.setupUi(self)
+        else:
+            self.ui = uic.loadUi(LOCAL_DIR + 'gui_profile.ui', self)
+        self.parent = parent
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
         self.setWindowTitle("Style for '" + parent.name + "'")
         self.setFixedSize(450, 170)
-        self.parent = parent
 
         fetch = parent.profile.query
         self.width = fetch("width")
@@ -629,7 +651,12 @@ class Child(QtWidgets.QWidget):
         super().__init__()
 
         # Load common settings
-        self.ui = uic.loadUi(LOCAL_DIR + 'gui_child.ui', self)
+        if "gui_child" in sys.modules:
+            self.ui = gui_child.Ui_Form()
+            self.ui.setupUi(self)
+        else:
+            self.ui = uic.loadUi(LOCAL_DIR + 'gui_child.ui', self)
+
         self.profile = Profile(path, parent)
         self.parent = parent
         self.path = path
@@ -645,9 +672,9 @@ class Child(QtWidgets.QWidget):
         self.ui.renameText.focusOutEvent = self.renameEvent
         self.ui.titleLabel.mousePressEvent = self.titleLabelMousePressEvent
         self.ui.titleLabel.mouseMoveEvent = self.titleLabelMouseMoveEvent
-        self.sizeGrip = QtWidgets.QSizeGrip(self.ui)
-        self.bottomLayout.addWidget(self.sizeGrip)
-        self.bottomLayout.setAlignment(self.sizeGrip, Qt.AlignRight)
+        self.sizeGrip = QtWidgets.QSizeGrip(self)
+        self.ui.bottomLayout.addWidget(self.sizeGrip)
+        self.ui.bottomLayout.setAlignment(self.sizeGrip, Qt.AlignRight)
 
         # Loading context menu
         icons = ["hide", "delete", "rename", "tray", "pin_menu", "pin_title", "toggle", "style", "image", "file_inactive", "preferences", "new"]
@@ -873,8 +900,8 @@ class Child(QtWidgets.QWidget):
         palette.setColor(QtGui.QPalette.Light, color)  # line
         self.ui.textEdit.viewport().setPalette(palette)
         self.ui.textEdit.viewport().update()
-        self.ui.setPalette(palette)
-        self.ui.update()
+        self.setPalette(palette)
+        self.update()
 
     def setFontColor(self, color):
         palette = self.ui.textEdit.viewport().palette()
@@ -1230,6 +1257,10 @@ def main():
     logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT, datefmt=LOG_FORMAT_DATE)
     logger = logging.getLogger()
     logger.info("Init of a new instance")
+    if "gui_child" in sys.modules and "gui_profile" in sys.modules and "gui_preferences" in sys.modules:
+        logger.info("Found pre-compiled ui files")
+    else:
+        logger.warning("Some or all pre-compiled ui files are missing")
 
     # Set paths
     global LOCAL_DIR, ICONS_DIR, PREFERENCES_FILE, PROFILES_FILE, DB_DIR, STYLESHEET_FILE
