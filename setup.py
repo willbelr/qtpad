@@ -30,10 +30,11 @@ except ImportError:
 
 setuptools.setup(
     name='qtpad',
-    version='1.0.0',
+    version='0.0.0',
     description='Modern and customizable sticky note application',
-    url='https://github.com/willbelr/qtpad',
     keywords='sticky note text editor note-taking',
+    author='William Belanger',
+    url='https://github.com/willbelr/qtpad',
 
     # From https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
@@ -46,7 +47,6 @@ setuptools.setup(
     ],
     cmdclass={'build_py': CreateDesktopFile},
     data_files=[('share/applications/', ['qtpad.desktop'])],
-    include_package_data=True,
     package_data=package_data,
     packages=setuptools.find_packages(),
     install_requires=install_requires,
