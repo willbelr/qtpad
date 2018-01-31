@@ -7,8 +7,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 class CreateDesktopFile(setuptools.command.build_py.build_py):
   def run(self):
-    path = here + "/qtpad.desktop"
-    with open(os.path.join(path), 'w') as f:
+    with open(os.path.join(here + "/qtpad.desktop"), 'w') as f:
         f.write("[Desktop Entry]\n")
         f.write("Name=qtpad\n")
         f.write("Exec=qtpad\n")
@@ -20,10 +19,14 @@ class CreateDesktopFile(setuptools.command.build_py.build_py):
 
 # Workaround in case PyQt5 was installed without pip
 install_requires=['requests']
+package_data={'': ['icons/*.svg']}
 try:
-    import PyQt5
+    # Convert ui files to python if PyQt5 is installed
+    from PyQt5 import uic
+    uic.compileUiDir('qtpad')
 except ImportError:
     install_requires.append("pyqt5")
+    package_data[''].append("*.ui")
 
 setuptools.setup(
     name='qtpad',
@@ -44,7 +47,7 @@ setuptools.setup(
     cmdclass={'build_py': CreateDesktopFile},
     data_files=[('share/applications/', ['qtpad.desktop'])],
     include_package_data=True,
-    package_data={'': ['*.ui', 'icons/*.svg']},
+    package_data=package_data,
     packages=setuptools.find_packages(),
     install_requires=install_requires,
     entry_points={
