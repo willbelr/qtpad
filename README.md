@@ -66,7 +66,7 @@ Profile GUI
     - Open the command prompt (cmd.exe) with administrator privileges
     - Type 'python -m pip install pyqt5 requests'
     - Clone the repository and extract the qtpad folder
-    - Create a shortcut to run the script manually with 'python your_installation_path/qtpad/__init__.py'
+    - Create a shortcut to run the script manually with 'python your_installation_path/qtpad/\_\_init\_\_.py'
 
 # Compatibility
 qtPad is developed on Openbox. Altough not tested as often, it should also work on other platforms:
