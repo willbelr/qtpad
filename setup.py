@@ -19,18 +19,15 @@ class CreateDesktopFile(setuptools.command.build_py.build_py):
 
 # Workaround in case PyQt5 was installed without pip
 install_requires=['requests']
-package_data={'': ['icons/*.svg']}
 try:
-    # Convert ui files to python if PyQt5 is installed
     from PyQt5 import uic
     uic.compileUiDir('qtpad')
 except:
     install_requires.append("pyqt5")
-    package_data[''].append("*.ui")
 
 setuptools.setup(
     name='qtpad',
-    version='0.0.0',
+    version='0.0.1',
     description='Modern and customizable sticky note application',
     keywords='sticky note text editor note-taking',
     author='William Belanger',
@@ -47,7 +44,7 @@ setuptools.setup(
     ],
     cmdclass={'build_py': CreateDesktopFile},
     data_files=[('share/applications/', ['qtpad.desktop'])],
-    package_data=package_data,
+    package_data={'': ['icons/*.svg']}
     packages=setuptools.find_packages(),
     install_requires=install_requires,
     entry_points={
