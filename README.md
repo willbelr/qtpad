@@ -38,7 +38,6 @@ Profile GUI
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/style.png)
 
 # Hotkeys
-
 - Ctrl+H: Hide
 - Ctrl+P: Pin
 - Ctrl+R: Rename
@@ -55,14 +54,19 @@ Profile GUI
 
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/hotkeys.gif)
 
-# Arch install
-- Download the PKGBUILD and place it inside a new directory
-- Open a terminal and type 'makepkg', then 'sudo pacman -U qtpad*'
+# Command line interface
+- All the actions listed in the preferences dialog can be called from command, by using flags -a or --action
+    - ie. qtpad -a "New note"
 
-# Manual install (non-Arch)
-You must first install Python 3, Qt5, Qt5-svg, and requests module. The installation method will vary according to your kernel.
-- Debian: 'sudo apt-get install python3-pyqt5 libqt5svg5 python3-requests'
-- Windows: Open the command prompt with administrator privileges and type 'python -m pip install pyqt5 requests'
+# Installation
+- Arch Linux: install 'qtpad-git' from the AUR
+- Linux (non-Arch): sudo pip install qtpad
+- Windows:
+    - Install the lastest version of Python, along with the PyPi utility (pip)
+    - Open the command prompt (cmd.exe) with administrator privileges
+    - Type 'python -m pip install pyqt5 requests'
+    - Clone the repository and extract the qtpad folder
+    - Create a shortcut to run the script manually with 'python your_installation_path/qtpad/__init__.py'
 
 # Compatibility
 qtPad is developed on Openbox. Altough not tested as often, it should also work on other platforms:
@@ -71,9 +75,15 @@ qtPad is developed on Openbox. Altough not tested as often, it should also work 
 
 Known bugs:
 - Current font family is not loaded in style dialog font combo box
+- Wrong position of the tray icon context menu in KDE 
  
  Please report all issues on Github :)
  
  # Future improvements
+ - Ignore case of command line interface
+ - Better size handling for images
+     - Respect small size when pasting
+     - Reduce size when image is larger than screen
+     - Restore size after sizegrip or rename
  - Dark icon theme
  - Search and replace functionnality
