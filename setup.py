@@ -27,7 +27,7 @@ except:
 
 setuptools.setup(
     name='qtpad',
-    version='0.0.1',
+    version='0.0.2',
     description='Modern and customizable sticky note application',
     keywords='sticky note text editor note-taking',
     author='William Belanger',
@@ -44,7 +44,7 @@ setuptools.setup(
     ],
     cmdclass={'build_py': CreateDesktopFile},
     data_files=[('share/applications/', ['qtpad.desktop'])],
-    package_data={'': ['icons/*.svg']}
+    package_data={'': ['icons/*.svg']},
     packages=setuptools.find_packages(),
     install_requires=install_requires,
     entry_points={
