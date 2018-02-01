@@ -24,7 +24,7 @@ try:
     # Convert ui files to python if PyQt5 is installed
     from PyQt5 import uic
     uic.compileUiDir('qtpad')
-except ImportError:
+except:
     install_requires.append("pyqt5")
     package_data[''].append("*.ui")
 
