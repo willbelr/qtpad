@@ -56,7 +56,7 @@ Profile GUI
 
 # Command line interface
 - All the actions listed in the preferences dialog can be called from command, by using flags -a or --action
-    - ie. qtpad -a "New note"
+    - ie. qtpad -a "new note"
 
 # Installation
 - Arch Linux: install 'qtpad-git' from the AUR
@@ -80,10 +80,5 @@ Known bugs:
  Please report all issues on Github :)
  
  # Future improvements
- - Ignore case of command line interface
- - Better size handling for images
-     - Respect small size when pasting
-     - Reduce size when image is larger than screen
-     - Restore size after sizegrip or rename
  - Dark icon theme
  - Search and replace functionnality
