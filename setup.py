@@ -22,6 +22,7 @@ class CreateDesktopFile(setuptools.command.build_py.build_py):
 # Workaround in case PyQt5 was installed without pip
 install_requires=['requests']
 try:
+    # Compile ui files to python
     from PyQt5 import uic
     uic.compileUiDir('qtpad')
 except:
@@ -29,7 +30,7 @@ except:
 
 setuptools.setup(
     name='qtpad',
-    version='0.0.3',
+    version='0.0.4',
     description='Modern and customizable sticky note application',
     keywords='sticky note text editor note-taking',
     author='William Belanger',
@@ -46,7 +47,7 @@ setuptools.setup(
     ],
     cmdclass={'build_py': CreateDesktopFile},
     data_files=[
-        ('share/icons/hicolor/scalable/apps', ['qtpad.svg']),
+        ('share/icons/hicolor/scalable/apps', ['qtpad/icons/qtpad.svg']),
         ('share/applications', ['qtpad.desktop'])
     ],
     package_data={'': ['icons/*.svg']},
