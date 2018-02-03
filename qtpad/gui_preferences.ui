@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>530</width>
-    <height>251</height>
+    <height>260</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,42 +66,35 @@
        </property>
        <widget class="QWidget" name="page">
         <layout class="QGridLayout" name="gridLayout_3">
-         <item row="2" column="0">
+         <item row="1" column="0">
           <widget class="QCheckBox" name="hotkeysBox">
            <property name="text">
             <string>Enable hotkeys</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="0" column="0">
           <widget class="QCheckBox" name="minimizeBox">
            <property name="text">
             <string>Minimize on startup</string>
            </property>
           </widget>
          </item>
-         <item row="4" column="0">
+         <item row="3" column="0">
           <widget class="QCheckBox" name="safeDeleteBox">
            <property name="text">
             <string>Confirm before deletion</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="alwaysOnTopBox">
-           <property name="text">
-            <string>Always on top</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
+         <item row="2" column="0">
           <widget class="QCheckBox" name="deleteEmptyNotesBox">
            <property name="text">
             <string>Delete empty notes</string>
            </property>
           </widget>
          </item>
-         <item row="5" column="0">
+         <item row="4" column="0">
           <spacer name="verticalSpacer_4">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
