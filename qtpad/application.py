@@ -723,20 +723,22 @@ class Child(QtWidgets.QWidget):
                 f.open(QtCore.QIODevice.WriteOnly)
                 image.save(f, "PNG")
                 width, height = image.width(), image.height()
+                self.profile.load()
+                self.profile.set("width", width)
+                self.profile.set("height", height)
+                self.profile.save()
             else:
-                width, height = self.profile.query("width"), self.profile.query("height")
+                image = QtGui.QPixmap(path)
+                width, height = image.width(), image.height()
 
             # Load the image file and set the widget size
-            image = QtGui.QPixmap(path)
             widthMax = round(QtWidgets.QDesktopWidget().screenGeometry().width() * 0.8)
             heightMax = round(QtWidgets.QDesktopWidget().screenGeometry().height() * 0.8)
             if width > widthMax or height > heightMax:
                 width = widthMax
                 height = heightMax
             self.ui.imageLabel.setPixmap(image.scaled(width, height, Qt.KeepAspectRatio))
-            self.profile.set("width", width)
-            self.profile.set("height", height)
-            self.profile.save()
+
         else:
             self.isImage = False
             self.ui.imageLabel.hide()
@@ -793,8 +795,12 @@ class Child(QtWidgets.QWidget):
         self.profile.load()
         self.profile.set("x", self.pos().x())
         self.profile.set("y", self.pos().y())
-        self.profile.set("width", self.width())
-        self.profile.set("height", self.height())
+        if self.isImage:
+            self.profile.set("width", self.ui.imageLabel.width())
+            self.profile.set("height", self.ui.imageLabel.height())
+        else:
+            self.profile.set("width", self.width())
+            self.profile.set("height", self.height())
         self.profile.save()
 
     def delete(self):
