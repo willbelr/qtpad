@@ -6,29 +6,41 @@
 - Customizable actions of left and middle click on the tray icon
 - Customizable default style for all new notes, style for specific notes and style presets
 - Customizable hotkeys and context menus
+- Notes can be organized in a single level folder system
 - Auto detect image content or path from clipboard
 - Auto save when loosing focus, and auto load when gaining focus
-- Indication of unsaved changes by an asterisk* at the end of the note title 
+- Indication of unsaved changes by an asterisk* in the note title 
 - All notes are locally stored in plain text, identified by their name
 - Many text actions boundable to hotkeys, such as indenting, sorting, case change, line shift... 
 - Search and replace GUI
 
 # Screenshots
-Customizable style presets
+**Customizable style presets**
 
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/quickstyle.png)
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/stylepreset.gif)
 
-Preferences GUI
+**Preferences GUI**
 
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/preferences_general.png)
+
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/preferences_hotkeys.png)
+
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/preferences_menus.png)
+
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/preferences_presets.png)
 
-Profile GUI
+
+**Profile GUI**
 
 ![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/style.png)
+
+
+
+
+**Search GUI**
+
+![alt tag](https://raw.githubusercontent.com/willbelr/qtpad/master/screenshots/search.png)
 
 # Command line interface
 - All the actions listed in the preferences dialog can be called from command, by using flags -a or --action
