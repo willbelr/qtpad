@@ -832,6 +832,8 @@ class Child(QtWidgets.QWidget):
         else:
             font = self.ui.textEdit.font()
             size = font.pointSize() + fontIncrement
+            if size < 7:
+                size = 7
             font.setPointSize(size)
             self.ui.textEdit.setFont(font)
             self.profile.save("fontSize", size)
