@@ -454,7 +454,7 @@ class SearchForm(QtWidgets.QWidget):
         self.setFixedSize(490, 100)
         self.setFocusPolicy(Qt.StrongFocus)
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
-        self.ui.installEventFilter(self)
+        self.installEventFilter(self)
         self.ui.searchFindButton.clicked.connect(self.find)
         self.ui.searchFindAllButton.clicked.connect(self.findAll)
         self.ui.searchReplaceButton.clicked.connect(self.replace)
