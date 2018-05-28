@@ -61,16 +61,22 @@ QWidget.QScrollBar
    </property>
    <item row="0" column="0">
     <widget class="QLabel" name="iconLabel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="minimumSize">
       <size>
        <width>30</width>
-       <height>0</height>
+       <height>24</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>30</width>
-       <height>16777215</height>
+       <height>24</height>
       </size>
      </property>
      <property name="text">
@@ -86,13 +92,13 @@ QWidget.QScrollBar
      <property name="minimumSize">
       <size>
        <width>30</width>
-       <height>0</height>
+       <height>24</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>30</width>
-       <height>16777215</height>
+       <height>24</height>
       </size>
      </property>
      <property name="font">
@@ -110,14 +116,29 @@ QWidget.QScrollBar
      <property name="plainText">
       <string/>
      </property>
+     <property name="tabStopWidth">
+      <number>16</number>
+     </property>
     </widget>
    </item>
    <item row="0" column="1">
     <widget class="QLabel" name="titleLabel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="minimumSize">
       <size>
        <width>0</width>
        <height>24</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>16777215</height>
       </size>
      </property>
      <property name="font">

@@ -16,11 +16,11 @@ def main():
 
     except dbus.exceptions.DBusException:
         # Create a new instance
-        import qtpad.application
+        import qtpad.mother
         if len(sys.argv) > 2:
-            qtpad.application.main(sys.argv[1], sys.argv[2])
+            qtpad.mother.main(sys.argv[1], sys.argv[2])
         else:
-            qtpad.application.main()
+            qtpad.mother.main()
 
 if __name__ == '__main__':
     main()

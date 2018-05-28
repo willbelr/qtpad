@@ -30,7 +30,7 @@ except:
 
 setuptools.setup(
     name='qtpad',
-    version='0.0.4',
+    version='0.0.6',
     description='Modern and customizable sticky note application',
     keywords='sticky note text editor note-taking',
     author='William Belanger',
