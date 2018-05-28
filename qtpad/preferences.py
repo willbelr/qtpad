@@ -463,7 +463,8 @@ class PreferencesDialog(QtWidgets.QDialog):
             child.set("fontSize", self.styleDefault["fontSize"])
             child.set("fontFamily", self.styleDefault["fontFamily"])
             child.save()
-        else:
+
+        elif self.genre == "Mother":
             # General settings
             self.db["general"]["nameText"] = self.ui.nameTextLine.text()
             self.db["general"]["nameImage"] = self.ui.nameImageLine.text()
