@@ -577,6 +577,9 @@
              <height>16777215</height>
             </size>
            </property>
+           <property name="minimum">
+            <number>100</number>
+           </property>
            <property name="maximum">
             <number>9999</number>
            </property>
@@ -648,6 +651,9 @@
              <height>16777215</height>
             </size>
            </property>
+           <property name="minimum">
+            <number>100</number>
+           </property>
            <property name="maximum">
             <number>9999</number>
            </property>
@@ -676,6 +682,9 @@
              <width>70</width>
              <height>16777215</height>
             </size>
+           </property>
+           <property name="minimum">
+            <number>7</number>
            </property>
           </widget>
          </item>
