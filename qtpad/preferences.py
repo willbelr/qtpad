@@ -816,28 +816,28 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.presetUpdatePreview(0)
 
     def hotkeyEnumerate(self):
-        self.hotkeyTable.setRowCount(0)  # Clear all content
+        self.ui.hotkeyTable.setRowCount(0)  # Clear all content
         row = 0
         for hotkey in sorted(self.db["hotkeys"]["ctrl"]):
-            self.hotkeyTable.insertRow(row)
-            self.hotkeyTable.setItem(row, 0, QtWidgets.QTableWidgetItem("Ctrl + " + hotkey))
-            self.hotkeyTable.setItem(row, 1, QtWidgets.QTableWidgetItem(self.db["hotkeys"]["ctrl"][hotkey].capitalize()))
+            self.ui.hotkeyTable.insertRow(row)
+            self.ui.hotkeyTable.setItem(row, 0, QtWidgets.QTableWidgetItem("Ctrl + " + hotkey))
+            self.ui.hotkeyTable.setItem(row, 1, QtWidgets.QTableWidgetItem(self.db["hotkeys"]["ctrl"][hotkey].capitalize()))
             row += 1
 
         for hotkey in sorted(self.db["hotkeys"]["shift"]):
-            self.hotkeyTable.insertRow(row)
-            self.hotkeyTable.setItem(row, 0, QtWidgets.QTableWidgetItem("Shift + " + hotkey))
-            self.hotkeyTable.setItem(row, 1, QtWidgets.QTableWidgetItem(self.db["hotkeys"]["shift"][hotkey].capitalize()))
+            self.ui.hotkeyTable.insertRow(row)
+            self.ui.hotkeyTable.setItem(row, 0, QtWidgets.QTableWidgetItem("Shift + " + hotkey))
+            self.ui.hotkeyTable.setItem(row, 1, QtWidgets.QTableWidgetItem(self.db["hotkeys"]["shift"][hotkey].capitalize()))
             row += 1
 
         for hotkey in sorted(self.db["hotkeys"]["ctrlShift"]):
-            self.hotkeyTable.insertRow(row)
-            self.hotkeyTable.setItem(row, 0, QtWidgets.QTableWidgetItem("Ctrl + Shift + " + hotkey))
-            self.hotkeyTable.setItem(row, 1, QtWidgets.QTableWidgetItem(self.db["hotkeys"]["ctrlShift"][hotkey].capitalize()))
+            self.ui.hotkeyTable.insertRow(row)
+            self.ui.hotkeyTable.setItem(row, 0, QtWidgets.QTableWidgetItem("Ctrl + Shift + " + hotkey))
+            self.ui.hotkeyTable.setItem(row, 1, QtWidgets.QTableWidgetItem(self.db["hotkeys"]["ctrlShift"][hotkey].capitalize()))
             row += 1
 
     def hotkeyAdd(self):
-        row = self.hotkeyTable.currentRow()
+        row = self.ui.hotkeyTable.currentRow()
         hotkey = self.ui.hotkeyKeyLine.text()
         action = self.ui.hotkeyActionCombo.currentText()
         if hotkey[:15] == "Ctrl + Shift + ":
@@ -857,8 +857,8 @@ class PreferencesDialog(QtWidgets.QDialog):
             self.ui.hotkeyActionCombo.setCurrentText('')
 
     def hotkeyDelete(self):
-        row = self.hotkeyTable.currentRow()
-        selectedKey = self.hotkeyTable.item(row, 0)
+        row = self.ui.hotkeyTable.currentRow()
+        selectedKey = self.ui.hotkeyTable.item(row, 0)
         if selectedKey:
             selectedKey = selectedKey.text()
             if selectedKey[:15] == "Ctrl + Shift + ":
@@ -867,7 +867,7 @@ class PreferencesDialog(QtWidgets.QDialog):
                 del self.db["hotkeys"]["shift"][selectedKey[8:]]
             elif selectedKey[:7] == "Ctrl + ":
                 del self.db["hotkeys"]["ctrl"][selectedKey[7:]]
-            self.hotkeyTable.removeRow(row)
+            self.ui.hotkeyTable.removeRow(row)
 
     def hotkeyEventFilter(self, event):
         eventType = event.type()
