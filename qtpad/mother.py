@@ -511,7 +511,7 @@ class SearchForm(QtWidgets.QWidget):
         cursor = self.active.ui.textEdit.textCursor()
         if find.lower() == cursor.selectedText().lower():
             cursor.insertText(replace)
-            self.active.save()
+            self.active.saveContent()
         self.find()
 
     def findAll(self, find=""):
@@ -555,7 +555,7 @@ class SearchForm(QtWidgets.QWidget):
         self.active.ui.textEdit.setExtraSelections(extraSelections)
         self.active.ui.textEdit.moveCursor(QtGui.QTextCursor.Start)
         self.findAll(replace)  # Underline replaced text
-        self.active.save()
+        self.active.saveContent()
 
 
 class QDBusServer(QObject):

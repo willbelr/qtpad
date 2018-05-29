@@ -55,7 +55,7 @@ class Child(QtWidgets.QWidget):
 
         # Init frame events
         self.saveTimer = QtCore.QTimer(singleShot=True)  # Save widget size only once the resize event is done
-        self.saveTimer.timeout.connect(self.save)
+        self.saveTimer.timeout.connect(self.saveGeometry)
 
         self.ui.titleLabel.mousePressEvent = self.titleLabelMousePressEvent
         self.ui.titleLabel.mouseMoveEvent = self.titleLabelMouseMoveEvent
@@ -147,10 +147,10 @@ class Child(QtWidgets.QWidget):
 
         elif eventType == QtCore.QEvent.FocusOut:
             if self.name:
-                self.save()
+                self.saveContent()
 
         elif eventType == QtCore.QEvent.Resize:
-            self.saveTimer.start(500)  # Workaround to avoid saving after each pixel update
+            self.saveTimer.start(400)  # Workaround to avoid saving after each pixel update
 
         if not self.isImage:
             if eventType == QtCore.QEvent.Show:
@@ -164,7 +164,7 @@ class Child(QtWidgets.QWidget):
 
     def dropEvent(self, event):
         QtWidgets.QPlainTextEdit.dropEvent(self.ui.textEdit, event)
-        self.save()
+        self.saveContent()
 
     def autoIndent(self, event):
         if self.preferences.query("general", "autoIndent"):
@@ -352,13 +352,15 @@ class Child(QtWidgets.QWidget):
                 self.ui.textEdit.setPlainText(content)
                 logger.info("Updated content of '" + self.name + "'")
 
-    def save(self):
+    def saveContent(self):
         if not self.isImage:
             if self.windowTitle()[-1] == "*" or self.ui.titleLabel.text()[-1] == "*":
                 self.setWindowTitle(self.windowTitle()[:-1])
                 self.ui.titleLabel.setText(self.ui.titleLabel.text()[:-1])
             with open(self.path, 'w') as f:
                 f.write(self.ui.textEdit.toPlainText())
+
+    def saveGeometry(self):
         self.profile.load()
         self.profile.set("x", self.pos().x())
         self.profile.set("y", self.pos().y())
@@ -608,6 +610,7 @@ class Child(QtWidgets.QWidget):
 
     def closeEvent(self, event):
         if self.name:
+            self.saveGeometry()
             self.hide()
             logger.info("Closed '" + self.name + "'")
             event.ignore()
@@ -903,7 +906,7 @@ class Child(QtWidgets.QWidget):
             self.renamePrompt()
 
         elif action == "save":
-            self.save()
+            self.saveContent()
 
         elif action == "pin":
             self.pin()

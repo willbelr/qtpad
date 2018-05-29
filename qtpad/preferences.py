@@ -453,62 +453,61 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.styleDefault = copyDict(PREFERENCES_DEFAULT["styleDefault"])
         self.load()
 
-    def save(self, child=None):
-        if child:
-            child.load()
-            child.set("width", self.styleDefault["width"])
-            child.set("height", self.styleDefault["height"])
-            child.set("background", self.styleDefault["background"])
-            child.set("foreground", self.styleDefault["foreground"])
-            child.set("fontSize", self.styleDefault["fontSize"])
-            child.set("fontFamily", self.styleDefault["fontFamily"])
-            child.save()
+    def saveProfile(self, profile):
+        profile.load()
+        profile.set("width", self.styleDefault["width"])
+        profile.set("height", self.styleDefault["height"])
+        profile.set("background", self.styleDefault["background"])
+        profile.set("foreground", self.styleDefault["foreground"])
+        profile.set("fontSize", self.styleDefault["fontSize"])
+        profile.set("fontFamily", self.styleDefault["fontFamily"])
+        profile.save()
 
-        elif self.genre == "Mother":
-            # General settings
-            self.db["general"]["nameText"] = self.ui.nameTextLine.text()
-            self.db["general"]["nameImage"] = self.ui.nameImageLine.text()
-            self.db["general"]["minimize"] = self.ui.minimizeBox.isChecked()
-            self.db["general"]["autoIndent"] = self.ui.autoIndentBox.isChecked()
-            self.db["general"]["safeDelete"] = self.ui.safeDeleteBox.isChecked()
-            self.db["general"]["deleteEmptyNotes"] = self.ui.deleteEmptyNotesBox.isChecked()
-            self.db["general"]["frameless"] = self.ui.framelessBox.isChecked()
-            if not self.db["general"]["notesDb"] == self.ui.notesDbLine.text():
-                self.changeNotesPath(self.ui.notesDbLine.text())
+    def savePreferences(self):
+        # General settings
+        self.db["general"]["nameText"] = self.ui.nameTextLine.text()
+        self.db["general"]["nameImage"] = self.ui.nameImageLine.text()
+        self.db["general"]["minimize"] = self.ui.minimizeBox.isChecked()
+        self.db["general"]["autoIndent"] = self.ui.autoIndentBox.isChecked()
+        self.db["general"]["safeDelete"] = self.ui.safeDeleteBox.isChecked()
+        self.db["general"]["deleteEmptyNotes"] = self.ui.deleteEmptyNotesBox.isChecked()
+        self.db["general"]["frameless"] = self.ui.framelessBox.isChecked()
+        if not self.db["general"]["notesDb"] == self.ui.notesDbLine.text():
+            self.changeNotesPath(self.ui.notesDbLine.text())
 
-            # Fetch clipboard
-            self.db["general"]["fetchClear"] = self.ui.fetchClearBox.isChecked()
-            self.db["general"]["fetchUrl"] = self.ui.fetchUrlBox.isChecked()
-            self.db["general"]["fetchFile"] = self.ui.fetchFileBox.isChecked()
-            self.db["general"]["fetchTxt"] = self.ui.fetchTxtBox.isChecked()
-            self.db["general"]["fetchIcon"] = self.ui.fetchIconBox.isChecked()
+        # Fetch clipboard
+        self.db["general"]["fetchClear"] = self.ui.fetchClearBox.isChecked()
+        self.db["general"]["fetchUrl"] = self.ui.fetchUrlBox.isChecked()
+        self.db["general"]["fetchFile"] = self.ui.fetchFileBox.isChecked()
+        self.db["general"]["fetchTxt"] = self.ui.fetchTxtBox.isChecked()
+        self.db["general"]["fetchIcon"] = self.ui.fetchIconBox.isChecked()
 
-            # Default actions
-            self.db["actions"]["leftAction"] = self.ui.leftClickCombo.currentText()
-            self.db["actions"]["middleAction"] = self.ui.middleClickCombo.currentText()
-            self.db["actions"]["startupAction"] = self.ui.startupCombo.currentText()
-            self.db["actions"]["leftCmd"] = self.ui.cmdLeftLine.text()
-            self.db["actions"]["middleCmd"] = self.ui.cmdMiddleLine.text()
-            self.db["actions"]["startupCmd"] = self.ui.cmdStartupLine.text()
+        # Default actions
+        self.db["actions"]["leftAction"] = self.ui.leftClickCombo.currentText()
+        self.db["actions"]["middleAction"] = self.ui.middleClickCombo.currentText()
+        self.db["actions"]["startupAction"] = self.ui.startupCombo.currentText()
+        self.db["actions"]["leftCmd"] = self.ui.cmdLeftLine.text()
+        self.db["actions"]["middleCmd"] = self.ui.cmdMiddleLine.text()
+        self.db["actions"]["startupCmd"] = self.ui.cmdStartupLine.text()
 
-            # Style default
-            self.db["styleDefault"]["pin"] = self.ui.stylePinBox.isChecked()
-            self.db["styleDefault"]["sizeGrip"] = self.ui.styleSizegripBox.isChecked()
+        # Style default
+        self.db["styleDefault"]["pin"] = self.ui.stylePinBox.isChecked()
+        self.db["styleDefault"]["sizeGrip"] = self.ui.styleSizegripBox.isChecked()
 
-            # Hotkeys
-            self.db["general"]["hotkeys"] = self.ui.hotkeyBox.isChecked()
+        # Hotkeys
+        self.db["general"]["hotkeys"] = self.ui.hotkeyBox.isChecked()
 
-            # Mother context menu
-            menuMotherItems = []
-            for item in range(self.ui.menuMotherSelectedList.count()):
-                menuMotherItems.append(self.ui.menuMotherSelectedList.item(item).text())
-            self.db["menus"]["mother"] = menuMotherItems
+        # Mother context menu
+        menuMotherItems = []
+        for item in range(self.ui.menuMotherSelectedList.count()):
+            menuMotherItems.append(self.ui.menuMotherSelectedList.item(item).text())
+        self.db["menus"]["mother"] = menuMotherItems
 
-            # Child context menu
-            menuChildItems = []
-            for item in range(self.ui.menuChildSelectedList.count()):
-                menuChildItems.append(self.ui.menuChildSelectedList.item(item).text())
-            self.db["menus"]["child"] = menuChildItems
+        # Child context menu
+        menuChildItems = []
+        for item in range(self.ui.menuChildSelectedList.count()):
+            menuChildItems.append(self.ui.menuChildSelectedList.item(item).text())
+        self.db["menus"]["child"] = menuChildItems
 
     def sanitizeString(self, string, unwanted):
         for c in unwanted:
@@ -599,11 +598,12 @@ class PreferencesDialog(QtWidgets.QDialog):
                     children = self.parent.children
 
                 for f in list(children):
-                    self.save(children[f].profile)
+                    self.saveProfile(children[f].profile)
                     children[f].loadStyle()
 
             # Update preferences database
-            self.save()
+            if self.genre == "Mother":
+                self.savePreferences()
             self.preferences.db = self.db
             self.preferences.save()
 
@@ -614,7 +614,7 @@ class PreferencesDialog(QtWidgets.QDialog):
 
             elif self.genre == "Child":
                 # Set style for current child
-                self.save(self.parent.profile)
+                self.saveProfile(self.parent.profile)
                 self.parent.resize(self.parent.profile.query("width"), self.parent.profile.query("height"))
 
         elif self.genre == "Child":
