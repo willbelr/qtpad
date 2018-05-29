@@ -39,7 +39,7 @@ class Child(QtWidgets.QWidget):
         self.profile = Profile(self, index=len(parent.children))
         self.setWindowTitle(self.name)
         self.ui.titleLabel.setText(self.name)
-        self.borderColor = "#444444"
+        self.borderColor = QtGui.QColor("#444444")
         self.modifier = {"ctrl": False, "shift": False, "ctrlShift": False}
         folder = path[len(notesDir):]
         if folder.find("/") == -1:
@@ -54,6 +54,9 @@ class Child(QtWidgets.QWidget):
             self.setAttribute(Qt.WA_X11NetWmWindowTypeUtility)
 
         # Init frame events
+        self.saveTimer = QtCore.QTimer(singleShot=True)  # Save widget size only once the resize event is done
+        self.saveTimer.timeout.connect(self.save)
+
         self.ui.titleLabel.mousePressEvent = self.titleLabelMousePressEvent
         self.ui.titleLabel.mouseMoveEvent = self.titleLabelMouseMoveEvent
         self.sizeGrip = QtWidgets.QSizeGrip(self)
@@ -145,6 +148,9 @@ class Child(QtWidgets.QWidget):
         elif eventType == QtCore.QEvent.FocusOut:
             if self.name:
                 self.save()
+
+        elif eventType == QtCore.QEvent.Resize:
+            self.saveTimer.start(500)  # Workaround to avoid saving after each pixel update
 
         if not self.isImage:
             if eventType == QtCore.QEvent.Show:
@@ -519,7 +525,7 @@ class Child(QtWidgets.QWidget):
         color = QtGui.QColor(color)
         palette = self.ui.textEdit.viewport().palette()
         palette.setColor(QtGui.QPalette.Base, color)  # textEdit
-        palette.setColor(QtGui.QPalette.Background, color)  # widget
+        palette.setColor(QtGui.QPalette.Background, self.borderColor)  # widget
         self.ui.textEdit.viewport().setPalette(palette)
         self.ui.textEdit.viewport().update()
         self.setPalette(palette)
@@ -573,7 +579,7 @@ class Child(QtWidgets.QWidget):
                     self.ui.closeButton.setStyleSheet(stylesheet)
                     border = stylesheet[stylesheet.find("QLabel#titleLabel"):]
                     start = border.find("background-color: ") + 18
-                    self.borderColor = border[start:start+7]
+                    self.borderColor = QtGui.QColor(border[start:start+7])
                 self.ui.iconLabel.show()
                 self.ui.titleLabel.show()
                 self.ui.closeButton.show()
@@ -597,7 +603,7 @@ class Child(QtWidgets.QWidget):
             # Draw a border for FramelessWindowHint
             painter = QtGui.QPainter(self)
             painter.setPen(Qt.NoPen)
-            painter.setBrush(QtGui.QBrush(QtGui.QColor(self.borderColor)))
+            painter.setBrush(QtGui.QBrush(self.borderColor))
             painter.drawRect(0, 0, self.width(), self.height())
 
     def closeEvent(self, event):
