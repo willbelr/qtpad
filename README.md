@@ -1,2 +1,2 @@
 # This project moved to Gitlab
-https://gitlab.com/william.belanger/qtpad
+https://gitlab.com/william.belanger/primenote
